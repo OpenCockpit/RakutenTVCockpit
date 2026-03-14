@@ -1,0 +1,27 @@
+#!/bin/sh
+
+SKIN_DIR="/usr/share/enigma2/Simple_Ten_Eighty"
+PLUGIN_SKIN_DIR="/usr/lib/enigma2/python/Plugins/Extensions/RakutenTV/skin"
+
+if [ -f "$SKIN_DIR/skin_plugins.xml" ] && [ -f "$PLUGIN_SKIN_DIR/Simple_Ten_Eighty/RakutenTV.xml" ]; then
+    if ! grep -q '<screen name="RakutenTV"' "$SKIN_DIR/skin_plugins.xml"; then
+        sed -i 's/<\/skin>//' "$SKIN_DIR/skin_plugins.xml"
+        cat "$PLUGIN_SKIN_DIR/Simple_Ten_Eighty/RakutenTV.xml" >> "$SKIN_DIR/skin_plugins.xml"
+        echo '</skin>' >> "$SKIN_DIR/skin_plugins.xml"
+        echo "RakutenTV skin added to Simple_Ten_Eighty skin_plugins.xml."
+    fi
+fi
+
+cp $PLUGIN_SKIN_DIR/rakutentv-backdrop.jpg $SKIN_DIR/extensions/rakutentv-backdrop.jpg
+
+echo "***********************************"
+echo "*           RakutenTV             *"
+echo "*              by                 *"
+echo "*           xentaurix             *"
+echo "***********************************"
+echo ""
+echo "Plugin installed successfully."
+echo "Please restart Enigma2 now!"
+echo ""
+
+exit 0
