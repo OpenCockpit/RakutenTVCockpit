@@ -1,0 +1,6 @@
+Description: RakutenTV
+Maintainer: xcentaurix
+Plugin: RakutenTV
+Package: enigma2-plugin-extensions-rakutentv
+Version: 0.6.0
+Architecture: all
