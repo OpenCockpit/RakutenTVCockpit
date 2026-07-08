@@ -37,13 +37,13 @@ from .Variables import TIMER_FILE, BOUQUET_FILE, PLUGIN_ICON
 from .SkinUtils import loadPluginSkin
 
 
-if findSkinScreen("RakutenTV") is None:
+if findSkinScreen("RakutenTVCockpit") is None:
     loadPluginSkin()
 
 
 class RakutenList(MenuList):
     def __init__(self, entries):
-        self.menu_png = LoadPixmap(x if fileExists(x := resolveFilename(SCOPE_CURRENT_SKIN, "icons/rakuten_menu.png")) else "/usr/lib/enigma2/python/Plugins/Extensions/RakutenTV/skin/images/menu.png") if fileExists("/usr/lib/enigma2/python/Plugins/Extensions/RakutenTV/skin/images/menu.png") else None
+        self.menu_png = LoadPixmap(x if fileExists(x := resolveFilename(SCOPE_CURRENT_SKIN, "icons/rakuten_menu.png")) else "/usr/lib/enigma2/python/Plugins/Extensions/RakutenTVCockpit/skin/images/menu.png") if fileExists("/usr/lib/enigma2/python/Plugins/Extensions/RakutenTVCockpit/skin/images/menu.png") else None
 
         MenuList.__init__(self, entries, content=eListboxPythonMultiContent)
         font = fonts.get("RakutenList", applySkinFactor("Regular", 19, 35))
@@ -59,12 +59,12 @@ class RakutenList(MenuList):
         return res
 
 
-class RakutenTV(Screen, HelpableScreen):
+class RakutenTVCockpit(Screen, HelpableScreen):
 
     def __init__(self, session):
         self.session = session
         Screen.__init__(self, session)
-        self.skinName = "RakutenTV"
+        self.skinName = "RakutenTVCockpit"
         HelpableScreen.__init__(self)
 
         self.colors = parameters.get("RakutenTvColors", [])
@@ -199,7 +199,7 @@ class RakutenTV(Screen, HelpableScreen):
                 self["poster"].show()
                 self["posterBG"].show()
         except Exception as ex:
-            print("[RakutenTV] showPoster, ERROR", ex)
+            print("[RakutenTVCockpit] showPoster, ERROR", ex)
 
     def getCategories(self):
         self.lvod = {}
@@ -389,7 +389,7 @@ class RakutenSetup(Setup):
         self["config"].list = configList
 
     def updateYellowButton(self):
-        if os.path.isdir(PiconFetcher().pluginPiconDir):
+        if os.path.isdir(PiconFetcher(config.plugins.rakutentv.picons).pluginPiconDir):
             self["key_yellow"].text = _("Remove picons")
         else:
             self["key_yellow"].text = ""
@@ -404,7 +404,7 @@ class RakutenSetup(Setup):
 
     def yellow(self):
         if self["key_yellow"].text:
-            PiconFetcher().removeall()
+            PiconFetcher(config.plugins.rakutentv.picons).removeall()
             self.updateYellowButton()
 
     def blue(self):
@@ -494,12 +494,28 @@ def Download_RakutenTV(session, **_kwargs):
 
 
 def system(session, **_kwargs):
-    session.open(RakutenTV)
+    session.open(RakutenTVCockpit)
 
 
 def Plugins(**_kwargs):
     return [
-        PluginDescriptor(name=_("Rakuten TV"), where=PluginDescriptor.WHERE_PLUGINMENU, icon=PLUGIN_ICON, description=_("Browse FAST channels from Rakuten TV"), fnc=system, needsRestart=True),
-        PluginDescriptor(name=_("Download Rakuten TV bouquet and picons"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=Download_RakutenTV, needsRestart=True),
-        PluginDescriptor(name=_("Silently download Rakuten TV"), where=PluginDescriptor.WHERE_SESSIONSTART, fnc=sessionstart),
+        PluginDescriptor(
+            name=_("RakutenTVCockpit"),
+            where=PluginDescriptor.WHERE_PLUGINMENU,
+            icon=PLUGIN_ICON,
+            description=_("Browse FAST channels from Rakuten TV"),
+            fnc=system,
+            needsRestart=True
+        ),
+        PluginDescriptor(
+            name=_("Download Rakuten TV bouquet and picons"),
+            where=PluginDescriptor.WHERE_EXTENSIONSMENU,
+            fnc=Download_RakutenTV,
+            needsRestart=True
+        ),
+        PluginDescriptor(
+            name=_("Silently download Rakuten TV"),
+            where=PluginDescriptor.WHERE_SESSIONSTART,
+            fnc=sessionstart
+        ),
     ]

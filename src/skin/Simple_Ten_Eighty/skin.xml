@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <skin>
-	<screen flags="wfNoBorder" name="RakutenTV" position="fill">
+	<screen flags="wfNoBorder" name="RakutenTVCockpit" position="fill">
 		<ePixmap pixmap="rakutentv-backdrop.jpg" position="0,0" size="e,1020" zPosition="-1"/>
 		<ePixmap alphatest="blend" pixmap="extensions/transblack.png" position="70,170" size="615,750" transparent="1" zPosition="1"/>
 		<widget enableWrapAround="1" name="feedlist" position="70,170" scrollbarMode="showOnDemand" size="615,728" transparent="1" zPosition="5"/>

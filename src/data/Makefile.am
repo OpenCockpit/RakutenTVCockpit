@@ -1,2 +1,2 @@
-installdir = $(libdir)/enigma2/python/Plugins/Extensions/RakutenTV/data
+installdir = $(libdir)/enigma2/python/Plugins/Extensions/RakutenTVCockpit/data
 install_DATA = *.ignore

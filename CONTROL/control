@@ -1,6 +1,4 @@
-Description: RakutenTV
-Maintainer: xcentaurix
-Plugin: RakutenTV
-Package: enigma2-plugin-extensions-rakutentv
-Version: 0.6.0
+Description: RakutenTVCockpit
+Package: enigma2-plugin-extensions-rakutentvcockpit
+Version: 0.8.1
 Architecture: all

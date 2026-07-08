@@ -1,4 +1,4 @@
 #!/bin/sh
-echo "Cleaning up after RakutenTV removal..."
-rm -rf -- /usr/lib/enigma2/python/Plugins/Extensions/RakutenTV >/dev/null 2>&1
+echo "Cleaning up after RakutenTVCockpit removal..."
+rm -rf -- /usr/lib/enigma2/python/Plugins/Extensions/RakutenTVCockpit >/dev/null 2>&1
 exit 0
