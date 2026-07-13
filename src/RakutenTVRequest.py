@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 from Components.config import config
 import requests
 
-from .RakutenTVConfig import CLASSIFICATION_IDS
+from .RakutenTVConfig import CLASSIFICATION_IDS, pickForwardIP
 from .Variables import USER_AGENT
 
 
@@ -42,6 +42,12 @@ class RakutenTVRequest:
             "market_code": region,
         }
 
+    @staticmethod
+    def _geoHeaders(region):
+        """X-Forwarded-For header set, so playback authorization sees *region*'s IP."""
+        ip = pickForwardIP(region)
+        return {"X-Forwarded-For": ip} if ip else {}
+
     def getLiveChannels(self, region=None):
         """Fetch live channels from Rakuten TV API. Returns list of channel dicts."""
         region = region or config.plugins.rakutentv.region.value
@@ -54,7 +60,7 @@ class RakutenTVRequest:
         params["per_page"] = 200
 
         try:
-            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=10)
+            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, headers=self._geoHeaders(region), timeout=10)
             response.raise_for_status()
             data = response.json()
             channels = data.get("data", [])
@@ -76,7 +82,7 @@ class RakutenTVRequest:
         params = self._get_base_params(region)
 
         try:
-            response = self.session.get(f"{self.API_BASE}/live_channel_categories", params=params, timeout=10)
+            response = self.session.get(f"{self.API_BASE}/live_channel_categories", params=params, headers=self._geoHeaders(region), timeout=10)
             response.raise_for_status()
             data = response.json()
             categories = data.get("data", [])
@@ -112,7 +118,7 @@ class RakutenTVRequest:
         }
 
         try:
-            response = self.session.post(f"{self.API_BASE}/avod/streamings", params=params, json=data, timeout=10)
+            response = self.session.post(f"{self.API_BASE}/avod/streamings", params=params, json=data, headers=self._geoHeaders(region), timeout=10)
             response.raise_for_status()
             result = response.json()
             stream_infos = result.get("data", {}).get("stream_infos", [])
@@ -234,7 +240,7 @@ class RakutenTVRequest:
             "epg_ends_at_timestamp": int(end_dt.timestamp()),
         })
         try:
-            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=60)
+            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, headers=self._geoHeaders(region), timeout=60)
             response.raise_for_status()
             return response.json().get("data", [])
         except Exception as e:
