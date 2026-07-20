@@ -1,0 +1,184 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: RakutenTV\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-20 15:31+0200\n"
+"PO-Revision-Date: 2026-07-20 23:30+0300\n"
+"Last-Translator: Orlandox\n"
+"Language-Team: Orlandox\n"
+"Language: fi_FI\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.9\n"
+"X-Poedit-Basepath: ../src\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Channel Categories"
+msgstr "Kanavakategoriat"
+
+msgid "Loading data... Please wait"
+msgstr "Ladataan tietoja... Odota hetki"
+
+msgid "Exit"
+msgstr "Poistu"
+
+msgid "TMDb Search"
+msgstr "TMDB-haku"
+
+msgid "IMDb Search"
+msgstr "IMDb-haku"
+
+msgid "MENU"
+msgstr "MENU"
+
+msgid "Go forward one level including starting playback"
+msgstr "Siirry taso eteenpäin ja aloita toisto"
+
+msgid "Go back one level including exiting"
+msgstr "Siirry taso taaksepäin tai poistu"
+
+msgid "Create or update Rakuten TV live bouquets"
+msgstr "Luo tai päivitä Rakuten TV -live-suosikkilistat"
+
+msgid "Go back one level"
+msgstr "Siirry taso taaksepäin"
+
+msgid "Open the plugin configuration screen"
+msgstr "Avaa liitännäisen asetukset"
+
+msgid "Search for information in %s"
+msgstr "Etsi tietoa kohteesta %s"
+
+msgid "The Movie Database"
+msgstr "The Movie Database"
+
+msgid "the Internet Movie Database"
+msgstr "the Internet Movie Database"
+
+msgid "Scroll the information field"
+msgstr "Vieritä tietokenttää"
+
+msgid "Rakuten TV"
+msgstr "Rakuten TV"
+
+msgid "There is no data, it is possible that Rakuten TV is not available in your region"
+msgstr "Tietoja ei ole. On mahdollista, että Rakuten TV ei ole saatavilla alueellasi."
+
+msgid ""
+"The Rakuten TV bouquets in your channel list have been updated.\n"
+"\n"
+"They will now be rebuilt automatically every 5 hours."
+msgstr ""
+"Kanavalistasi Rakuten TV -suosikkilistat on päivitetty.\n"
+"\n"
+"Ne luodaan nyt uudelleen automaattisesti 5 tunnin välein."
+
+msgid "Update Live-TV Bouquet"
+msgstr "Päivitä Live-TV-suosikkilista"
+
+msgid "Live-TV Bouquet last updated:"
+msgstr "Live-TV-suosikkilista päivitetty viimeksi:"
+
+msgid "Live-TV Bouquet needs updating. Press GREEN."
+msgstr "Live-TV-suosikkilista vaatii päivityksen. Paina VIHREÄÄ."
+
+msgid "Create Live-TV Bouquet"
+msgstr "Luo Live-TV-suosikkilista"
+
+msgid "service name"
+msgstr "kanavan nimi"
+
+msgid "service reference"
+msgstr "kanavan referenssi"
+
+msgid "None"
+msgstr "Ei mitään"
+
+msgid "Yes"
+msgstr "Kyllä"
+
+msgid "No"
+msgstr "Ei"
+
+msgid "A silent download is in progress."
+msgstr "Lataus on käynnissä taustalla."
+
+msgid "picons"
+msgstr "kanavalogot"
+
+msgid "Fetching picons..."
+msgstr "Haetaan kanavalogoja..."
+
+msgid "Live-TV update completed"
+msgstr "Live-TV:n päivitys valmistui"
+
+msgid "Processing data..."
+msgstr "Käsitellään tietoja..."
+
+msgid "Waiting for Channel: "
+msgstr "Odotetaan kanavaa: "
+
+msgid "EPGImport plugin not found - please install it to get EPG data for Rakuten TV."
+msgstr "EPGImport-liitännäistä ei löytynyt – asenna se saadaksesi ohjelmaopastiedot (EPG) Rakuten TV:lle."
+
+msgid "The download is in progress. Exit now?"
+msgstr "Lataus on käynnissä. Poistutaanko silti?"
+
+msgid "Rakuten TV updating"
+msgstr "Rakuten TV päivittyy"
+
+msgid "Please wait..."
+msgstr "Odota hetki..."
+
+msgid "Updating: Rakuten TV %s"
+msgstr "Päivitetään: Rakuten TV %s"
+
+msgid "Remove picons"
+msgstr "Poista kanavalogot"
+
+msgid "Rakuten TV Setup Actions"
+msgstr "Rakuten TV -asetustoiminnot"
+
+msgid "Remove Live-TV Bouquet"
+msgstr "Poista Live-TV-suosikkilista"
+
+msgid "Rakuten TV Setup"
+msgstr "Rakuten TV -asetukset"
+
+msgid "Region"
+msgstr "Alue"
+
+msgid "Select the region for the channel list."
+msgstr "Valitse kanavalistan alue."
+
+msgid "Live-TV bouquet %s"
+msgstr "Live-TV-suosikkilista %s"
+
+msgid "Region for which Live-TV bouquet %s will be created."
+msgstr "Alue, jolle Live-TV-suosikkilista %s luodaan."
+
+msgid "Picon type"
+msgstr "Kanavalogon tyyppi"
+
+msgid "Using service name picons means they will continue to work even if the service reference changes."
+msgstr "Kanavan nimeen perustuvien kanavalogojen käyttö tarkoittaa, että ne toimivat edelleen, vaikka kanavan referenssi muuttuisi."
+
+msgid "Data location"
+msgstr "Tietojen tallennuspaikka"
+
+msgid "Location the configuration data are stored in."
+msgstr "Sijainti, johon asetustiedot tallennetaan."
+
+msgid "RakutenTVCockpit"
+msgstr "RakutenTVCockpit"
+
+msgid "Browse FAST channels from Rakuten TV"
+msgstr "Selaa Rakuten TV:n maksuttomia FAST-kanavia (Free Ad-supported Streaming TV)"
+
+msgid "Download Rakuten TV bouquet and picons"
+msgstr "Lataa Rakuten TV -suosikkilista ja kanavalogot"
+
+msgid "Silently download Rakuten TV"
+msgstr "Lataa Rakuten TV taustalla"
