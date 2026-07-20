@@ -8,6 +8,8 @@ from .RakutenTVDownload import RakutenTVDownload, Silent
 from .RakutenTVCockpit import RakutenTVCockpit
 from .Variables import PLUGIN_ICON
 from .SkinUtils import loadPluginSkin
+from .Version import VERSION
+from .Debug import logger
 
 
 if findSkinScreen("RakutenTVCockpit") is None:
@@ -15,6 +17,7 @@ if findSkinScreen("RakutenTVCockpit") is None:
 
 
 def sessionstart(reason, session, **_kwargs):  # pylint: disable=unused-argument
+    logger.info("+++ Version: %s starts...", VERSION)
     Silent.init(session)
 
 
