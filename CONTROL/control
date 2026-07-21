@@ -1,4 +1,5 @@
 Description: RakutenTVCockpit
 Package: enigma2-plugin-extensions-rakutentvcockpit
-Version: 0.8.3
+Version: 0.9.3
 Architecture: all
+Depends: enigma2-plugin-extensions-epgimport

@@ -9,6 +9,7 @@ import requests
 
 from .RakutenTVConfig import CLASSIFICATION_IDS, pickForwardIP
 from .Variables import USER_AGENT
+from .Debug import logger
 
 
 class RakutenTVRequest:
@@ -66,10 +67,10 @@ class RakutenTVRequest:
             channels = data.get("data", [])
             self._channels_cache[region] = channels
             self._channels_cache_time[region] = now
-            print(f"[RakutenTV] getLiveChannels: {len(channels)} channels for {region}")
+            logger.debug("getLiveChannels: %s channels for %s", len(channels), region)
             return channels
         except Exception as e:
-            print(f"[RakutenTV] getLiveChannels error: {e}")
+            logger.debug("getLiveChannels error: %s", e)
             return self._channels_cache.get(region, [])
 
     def getLiveChannelCategories(self, region=None):
@@ -88,10 +89,10 @@ class RakutenTVRequest:
             categories = data.get("data", [])
             self._categories_cache[region] = categories
             self._categories_cache_time[region] = now
-            print(f"[RakutenTV] getLiveChannelCategories: {len(categories)} categories for {region}")
+            logger.debug("getLiveChannelCategories: %s categories for %s", len(categories), region)
             return categories
         except Exception as e:
-            print(f"[RakutenTV] getLiveChannelCategories error: {e}")
+            logger.debug("getLiveChannelCategories error: %s", e)
             return self._categories_cache.get(region, [])
 
     def getLiveStreamURL(self, channel_id, language_id, region=None):
@@ -126,7 +127,7 @@ class RakutenTVRequest:
                 url = stream_infos[0].get("url", "")
                 return url
         except Exception as e:
-            print(f"[RakutenTV] getLiveStreamURL error for {channel_id}: {e}")
+            logger.debug("getLiveStreamURL error for %s: %s", channel_id, e)
         return ""
 
     def getChannels(self, region=None):
@@ -136,7 +137,6 @@ class RakutenTVRequest:
         raw_channels = self.getLiveChannels(region)
         categories_raw = self.getLiveChannelCategories(region)
 
-        # Build category lookup: channel_id -> category_name
         cat_map = {}
         for category in categories_raw:
             cat_name = category.get("name", "Uncategorized")
@@ -149,7 +149,6 @@ class RakutenTVRequest:
             if not ch_id:
                 continue
 
-            # Extract first language ID for streaming
             langs = []
             for lang in ch.get("labels", {}).get("languages", []):
                 lang_id = lang.get("id")
@@ -159,7 +158,6 @@ class RakutenTVRequest:
             logo = ""
             images = ch.get("images", {})
             if images:
-                # Try artwork, then snapshot, then any available
                 for key in ("artwork", "snapshot", "poster"):
                     if key in images:
                         logo = images[key]
@@ -167,7 +165,6 @@ class RakutenTVRequest:
                 if not logo:
                     logo = next(iter(images.values()), "")
 
-            # classification may contain a description
             classification = ch.get("classification", {})
             description = classification.get("description", "") if isinstance(classification, dict) else ""
 
@@ -178,7 +175,7 @@ class RakutenTVRequest:
                 "category": cat_map.get(ch_id, "Uncategorized"),
                 "description": description,
                 "logo": logo,
-                "stream_url": "",  # resolved lazily
+                "stream_url": "",
                 "language_id": langs[0] if langs else "ENG",
             })
 
@@ -244,7 +241,7 @@ class RakutenTVRequest:
             response.raise_for_status()
             return response.json().get("data", [])
         except Exception as e:
-            print(f"[RakutenTV] getEPG window error: {e}")
+            logger.debug("getEPG window error: %s", e)
             return []
 
     def getEPG(self, region=None, hours=48):
@@ -277,10 +274,9 @@ class RakutenTVRequest:
             cursor = window_end
 
         if not programmes:
-            print(f"[RakutenTV] getEPG: no events for {region}")
+            logger.debug("getEPG: no events for %s", region)
             return None
 
-        # Deduplicate by (channel, start, stop) in case windows overlap
         seen = set()
         unique = []
         for p in programmes:
@@ -307,7 +303,7 @@ class RakutenTVRequest:
                 lines.append(f'    <desc>{escape(desc)}</desc>')
             lines.append('  </programme>')
         lines.append('</tv>')
-        print(f"[RakutenTV] getEPG: {len(unique)} events for {region}")
+        logger.debug("getEPG: %s events for %s", len(unique), region)
         return "\n".join(lines).encode("utf-8")
 
     @staticmethod

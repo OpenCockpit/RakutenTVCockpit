@@ -3,14 +3,13 @@
 import ipaddress
 import random
 
-from Components.config import ConfigSelection, ConfigSubsection, config
+from Components.config import ConfigDirectory, ConfigSelection, ConfigSubsection, config
 
 from . import _
 from .Variables import NUMBER_OF_LIVETV_BOUQUETS
 from .CockpitTVConfig import setupLocationSlots
 
 
-# Regions available on Rakuten TV (FAST channels)
 REGION_NAMES = {
     "at": "Austria",
     "ch": "Switzerland",
@@ -29,12 +28,6 @@ REGION_NAMES = {
     "uk": "United Kingdom",
 }
 
-# Geo-spoofing IP ranges per region, used for X-Forwarded-For headers so the
-# stream-resolution request appears to originate from the selected region
-# instead of the box's real location. Each value is a /24 known (via public
-# RIR delegation data) to be allocated within that country.
-# pickForwardIP() draws a random host from it (cached for the process
-# lifetime) instead of always sending one exact address.
 X_FORWARD_NETS = {
     "at": "2.18.68.0/24",
     "ch": "5.144.31.0/24",
@@ -72,7 +65,6 @@ def pickForwardIP(region):
     return _forwardIPCache[region]
 
 
-# Classification IDs for Rakuten TV API
 CLASSIFICATION_IDS = {
     "al": 270,
     "at": 300,
@@ -111,14 +103,11 @@ CLASSIFICATION_IDS = {
 TSIDS = {cc: f"{i:X}" for i, cc in enumerate(REGION_NAMES, 0x200)}
 
 
-# --- Config subsection ---------------------------------------------------
-
 config.plugins.rakutentv = ConfigSubsection()
 config.plugins.rakutentv.region = ConfigSelection(default="de", choices=list(REGION_NAMES.items()))
 config.plugins.rakutentv.picons = ConfigSelection(default="snp", choices=[("snp", _("service name")), ("srp", _("service reference")), ("", _("None"))])
 config.plugins.rakutentv.silentmode = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
+config.plugins.rakutentv.config_folder = ConfigDirectory(default="/etc/enigma2")
 
-
-# --- LiveTV region config items -----------------------------------------
 
 getselectedregions = setupLocationSlots(config.plugins.rakutentv, "live_tv_region", REGION_NAMES, NUMBER_OF_LIVETV_BOUQUETS, _("None"), first_default="de")

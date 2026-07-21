@@ -14,11 +14,10 @@ from enigma import eTimer
 from . import _
 from .RakutenTVConfig import REGION_NAMES, TSIDS, getselectedregions
 from .RakutenTVRequest import rakutenRequest
-from .Variables import TIMER_FILE, BOUQUET_FILE, BOUQUET_NAME
+from .Variables import TIMER_FILE, BOUQUET_FILE, BOUQUET_NAME, CHANNELLIST_FILE, XMLTV_FILE
 from .CockpitTVDownload import TVDownloadBase, TVDownloadScreenMixin, TVDownloadSilentMixin, importXMLTVGuide
 
 
-# Data paths for ignore list
 DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 RAKUTEN_IGNORE = "rakutentv.ignore"
 
@@ -28,13 +27,14 @@ class RakutenTVDownloadBase(TVDownloadBase):
 
     TIMER_FILE = TIMER_FILE
     BOUQUET_FILE = BOUQUET_FILE
+    CHANNELLIST_FILE = CHANNELLIST_FILE
+    XMLTV_FILE = XMLTV_FILE
     TSIDS = TSIDS
 
-    LOG_PREFIX = "RakutenTV Download"
     SILENT_IN_PROGRESS_TEXT = _("A silent download is in progress.")
     PICONS_LABEL = _("picons")
     FETCHING_PICONS_TEXT = _("Fetching picons...")
-    UPDATE_COMPLETED_TEXT = _("LiveTV update completed")
+    UPDATE_COMPLETED_TEXT = _("Live-TV update completed")
     PROCESSING_TEXT = _("Processing data...")
     WAITING_FOR_CHANNEL_TEXT = _("Waiting for Channel: ")
     EPGIMPORT_MISSING_TEXT = _("EPGImport plugin not found - please install it to get EPG data for Rakuten TV.")
@@ -67,6 +67,9 @@ class RakutenTVDownloadBase(TVDownloadBase):
     def _picons_config(self):
         return config.plugins.rakutentv.picons
 
+    def _configFolder(self):
+        return config.plugins.rakutentv.config_folder.value
+
     def _fetchChannels(self, cc):
         return rakutenRequest.getChannels(cc)
 
@@ -79,7 +82,6 @@ class RakutenTVDownloadBase(TVDownloadBase):
         if not xmltv_data:
             return
 
-        # Build channel ref mapping: channel_id -> service ref
         channels_map = {}
         for cat in self.categories:
             if cat in self.channelsList:
@@ -88,7 +90,8 @@ class RakutenTVDownloadBase(TVDownloadBase):
                     channels_map[_id] = ref
                     channels_map[_id.lower()] = ref
 
-        if not importXMLTVGuide(self.epgcache, self.LOG_PREFIX, "/tmp/rakutentv-epg.xml", xmltv_data, channels_map):
+        path = os.path.join(self._configFolder(), self.XMLTV_FILE % cc)
+        if not importXMLTVGuide(self.epgcache, "RakutenTV", path, xmltv_data, channels_map):
             self.epgimport_missing = True
 
     def _buildBouquetEntry(self, key, chitem):
