@@ -35,7 +35,7 @@ def Plugins(**_kwargs):
             name=_("RakutenTVCockpit"),
             where=PluginDescriptor.WHERE_PLUGINMENU,
             icon=PLUGIN_ICON,
-            description=_("Browse FAST channels from Rakuten TV"),
+            description=_("Live-TV Bouquet Management"),
             fnc=system,
             needsRestart=True
         ),

@@ -17,24 +17,6 @@ Rakuten TV offers Video-On-Demand but requires Widevine for playback
 - Live TV bouquet creation with EPG support
 - Picon (channel icon) download
 
-## Supported Regions
-- Austria
-- Switzerland
-- Germany
-- Denmark
-- Spain
-- Finland
-- France
-- Ireland
-- Italy
-- Netherlands
-- Norway
-- Poland
-- Romania
-- Sweden
-- United Kingdom
-- United States
-
 ## Disclaimer
 The project author is not responsible for how this software is used by others. It is not intended to be used for accessing or distributing copyrighted materials without authorization.
 Users are solely responsible for determining the legality of their actions.

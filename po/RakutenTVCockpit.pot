@@ -177,7 +177,7 @@ msgstr ""
 msgid "RakutenTVCockpit"
 msgstr ""
 
-msgid "Browse FAST channels from Rakuten TV"
+msgid "Live-TV Bouquet Management"
 msgstr ""
 
 msgid "Download Rakuten TV bouquet and picons"

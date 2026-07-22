@@ -1,8 +1,5 @@
 # Copyright (C) 2026 by xcentaurix
 
-import ipaddress
-import random
-
 from Components.config import ConfigDirectory, ConfigSelection, ConfigSubsection, config
 
 from . import _
@@ -26,44 +23,23 @@ REGION_NAMES = {
     "ro": "Romania",
     "se": "Sweden",
     "uk": "United Kingdom",
+    "al": "Albania",
+    "ba": "Bosnia and Herzegovina",
+    "be": "Belgium",
+    "bg": "Bulgaria",
+    "cz": "Czechia",
+    "ee": "Estonia",
+    "gr": "Greece",
+    "hr": "Croatia",
+    "is": "Iceland",
+    "lt": "Lithuania",
+    "lu": "Luxembourg",
+    "me": "Montenegro",
+    "mk": "North Macedonia",
+    "pt": "Portugal",
+    "rs": "Serbia",
+    "sk": "Slovakia",
 }
-
-X_FORWARD_NETS = {
-    "at": "2.18.68.0/24",
-    "ch": "5.144.31.0/24",
-    "de": "85.214.132.0/24",
-    "dk": "80.63.84.0/24",
-    "es": "88.26.241.0/24",
-    "fi": "85.194.236.0/24",
-    "fr": "176.31.84.0/24",
-    "ie": "2.57.24.0/24",
-    "it": "5.133.48.0/24",
-    "nl": "2.56.56.0/24",
-    "no": "84.214.150.0/24",
-    "pl": "2.56.68.0/24",
-    "ro": "2.59.15.0/24",
-    "se": "185.39.146.0/24",
-    "uk": "185.199.220.0/24",
-}
-
-_forwardIPCache = {}
-
-
-def pickForwardIP(region):
-    """Return an X-Forwarded-For address for *region*, or None if unmapped.
-
-    Picked once per region and cached for the life of the process (not
-    re-rolled per call), so a single streaming session doesn't see its
-    apparent origin IP change mid-flight. Restarting the plugin re-rolls
-    it, spreading requests across the subnet over time.
-    """
-    net = X_FORWARD_NETS.get(region)
-    if net is None:
-        return None
-    if region not in _forwardIPCache:
-        _forwardIPCache[region] = str(random.choice(list(ipaddress.ip_network(net).hosts())))
-    return _forwardIPCache[region]
-
 
 CLASSIFICATION_IDS = {
     "al": 270,

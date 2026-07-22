@@ -174,8 +174,8 @@ msgstr "Verzeichnis der Konfigurationsdaten"
 msgid "RakutenTVCockpit"
 msgstr "Rakuten TV"
 
-msgid "Browse FAST channels from Rakuten TV"
-msgstr "Rakuten Live-TV-Kanalliste"
+msgid "Live-TV Bouquet Management"
+msgstr "Live-TV Bouquet Management"
 
 msgid "Download Rakuten TV bouquet and picons"
 msgstr "Lade Rakuten TV Bouquet, Picons und EPG"

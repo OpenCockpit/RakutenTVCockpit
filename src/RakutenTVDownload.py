@@ -31,6 +31,7 @@ class RakutenTVDownloadBase(TVDownloadBase):
     XMLTV_FILE = XMLTV_FILE
     TSIDS = TSIDS
 
+    FINALIZE_DELAY = 3
     SILENT_IN_PROGRESS_TEXT = _("A silent download is in progress.")
     PICONS_LABEL = _("picons")
     FETCHING_PICONS_TEXT = _("Fetching picons...")
@@ -147,7 +148,7 @@ class RakutenTVDownload(TVDownloadScreenMixin, RakutenTVDownloadBase, Screen):
         self["action"].text = _("Updating: Rakuten TV %s") % cc.upper()
 
     def noCategories(self):
-        self.session.openWithCallback(self.exitOk, MessageBox, _("There is no data, it is possible that Rakuten TV is not available in your region"), type=MessageBox.TYPE_ERROR, timeout=10)
+        self.session.open(MessageBox, _("There is no data, it is possible that Rakuten TV is not available in your region"), type=MessageBox.TYPE_ERROR, timeout=10)
 
     def _restartSilentTimer(self):
         Silent.stop()
