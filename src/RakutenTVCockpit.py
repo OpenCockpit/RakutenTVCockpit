@@ -11,6 +11,7 @@ from Components.Label import Label
 from Components.Pixmap import Pixmap
 from Components.ScrollLabel import ScrollLabel
 from Components.Sources.StaticText import StaticText
+from Screens.ChoiceBox import ChoiceBox
 from Screens.HelpMenu import HelpableScreen
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
@@ -20,7 +21,7 @@ from enigma import BT_KEEP_ASPECT_RATIO, BT_SCALE, BT_HALIGN_CENTER, BT_VALIGN_C
 from skin import parameters
 
 from . import _
-from .RakutenTVConfig import getselectedregions
+from .RakutenTVConfig import REGION_NAMES, getselectedregions
 from .RakutenTVRequest import rakutenRequest
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .PRSUtils import PRSUtils
@@ -183,7 +184,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
 
     def _getCategoriesCallback(self, categories):
         if not categories:
-            self.session.open(MessageBox, _("There is no data, it is possible that Rakuten TV is not available in your region"), type=MessageBox.TYPE_ERROR, timeout=10)
+            self.session.open(MessageBox, _("There is no data for %s. It may be caused by geo-blocking, or Rakuten TV may not be available in your region.") % REGION_NAMES.get(self.region, self.region), type=MessageBox.TYPE_ERROR, timeout=10)
         else:
             for category in categories:
                 self.buildlist(category)
@@ -283,10 +284,30 @@ class RakutenTVCockpit(Screen, HelpableScreen):
                 self.session.open(PRSPlayer, service=reference, sid=sid, resume_points=resumePointsInstance)
 
     def green(self):
-        self.session.openWithCallback(self.endupdateLive, RakutenTVDownload)
+        locations = [x for x in getselectedregions() if x] or [config.plugins.rakutentv.region.value]
+        if len(locations) <= 1:
+            self.session.openWithCallback(self.endupdateLive, RakutenTVDownload)
+            return
+        choices = [(_("All"), None)] + [(REGION_NAMES.get(cc, cc), cc) for cc in locations]
+        self.session.openWithCallback(
+            self.greenChoice,
+            ChoiceBox,
+            title=_("Select a Live-TV bouquet to update"),
+            list=choices,
+            keys=[]
+        )
+
+    def greenChoice(self, result=None):
+        if result is None:
+            return
+        self.session.openWithCallback(self.endupdateLive, RakutenTVDownload, locations=[result[1]] if result[1] else None)
 
     def endupdateLive(self, _ret=None):
-        self.session.openWithCallback(self.updatebutton, MessageBox, _("The Rakuten TV bouquets in your channel list have been updated.\n\nThey will now be rebuilt automatically every 5 hours."), type=MessageBox.TYPE_INFO, timeout=10)
+        if _ret:
+            regions = ", ".join(REGION_NAMES.get(cc, cc) for cc in _ret)
+            self.session.openWithCallback(self.updatebutton, MessageBox, _("The Rakuten TV bouquets for %s in your channel list have been updated.\n\nThey will now be rebuilt automatically every 5 hours.") % regions, type=MessageBox.TYPE_INFO, timeout=10)
+        else:
+            self.updatebutton()
 
     def updatebutton(self, _ret=None):
         with open("/etc/enigma2/bouquets.tv", "r", encoding="utf-8") as f:

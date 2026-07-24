@@ -10,9 +10,10 @@ from Screens.Setup import Setup
 
 from . import _
 from .RakutenTVConfig import NUMBER_OF_LIVETV_BOUQUETS
-from .RakutenTVDownload import Silent
+from .RakutenTVDownload import RakutenTVDownload, Silent
 from .PiconFetcher import PiconFetcher
 from .Variables import BOUQUET_FILE
+from .Version import VERSION
 
 
 class RakutenTVSetup(Setup):
@@ -30,7 +31,7 @@ class RakutenTVSetup(Setup):
             }, prio=1, description=_("Rakuten TV Setup Actions"))
         self.updateYellowButton()
         self.updateBlueButton()
-        self.setTitle(_("Rakuten TV Setup"))
+        self.setTitle(_("Rakuten TV Setup") + f" ({VERSION})")
 
     def createSetup(self):
         configList = []
@@ -41,8 +42,20 @@ class RakutenTVSetup(Setup):
                 configList.append((_("Live-TV bouquet %s") % n, getattr(config.plugins.rakutentv, "live_tv_region" + str(n)), _("Region for which Live-TV bouquet %s will be created.") % n))
         configList.append(("---",))
         configList.append((_("Picon type"), config.plugins.rakutentv.picons, _("Using service name picons means they will continue to work even if the service reference changes.")))
+        configList.append((_("Automatic update check"), config.plugins.rakutentv.auto_update_check, _("Automatically check for a newer package update when the plugin GUI is opened.")))
         configList.append((_("Data location"), config.plugins.rakutentv.config_folder, _("Location the configuration data are stored in.")))
         self["config"].list = configList
+
+    def _locationConfigChanged(self):
+        if config.plugins.rakutentv.region.isChanged():
+            return True
+        return any(getattr(config.plugins.rakutentv, "live_tv_region" + str(n)).isChanged() for n in range(1, NUMBER_OF_LIVETV_BOUQUETS + 1))
+
+    def keySave(self):
+        if self._locationConfigChanged():
+            self.session.openWithCallback(lambda *_: Setup.keySave(self), RakutenTVDownload)
+        else:
+            Setup.keySave(self)
 
     def updateYellowButton(self):
         if os.path.isdir(PiconFetcher(config.plugins.rakutentv.picons).pluginPiconDir):
