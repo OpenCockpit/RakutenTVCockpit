@@ -83,6 +83,7 @@ config.plugins.rakutentv = ConfigSubsection()
 config.plugins.rakutentv.region = ConfigSelection(default="de", choices=list(REGION_NAMES.items()))
 config.plugins.rakutentv.picons = ConfigSelection(default="snp", choices=[("snp", _("service name")), ("srp", _("service reference")), ("", _("None"))])
 config.plugins.rakutentv.silentmode = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
+config.plugins.rakutentv.auto_update_check = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
 config.plugins.rakutentv.config_folder = ConfigDirectory(default="/etc/enigma2")
 
 
