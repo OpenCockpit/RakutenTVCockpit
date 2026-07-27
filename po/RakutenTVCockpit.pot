@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RakutenTV\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-23 13:35+0200\n"
-"PO-Revision-Date: 2026-07-23 13:43+0200\n"
+"POT-Creation-Date: 2026-07-27 16:11+0200\n"
+"PO-Revision-Date: 2026-07-27 16:11+0200\n"
 "Last-Translator: xcentaurix\n"
 "Language-Team: xcentaurix\n"
 "Language: de_DE@formal\n"
@@ -68,13 +68,16 @@ msgid ""
 "not be available in your region."
 msgstr ""
 
+msgid "All"
+msgstr ""
+
+msgid "Select a Live-TV bouquet to update"
+msgstr ""
+
 msgid ""
 "The Rakuten TV bouquets for %s in your channel list have been updated.\n"
 "\n"
 "They will now be rebuilt automatically every 5 hours."
-msgstr ""
-
-msgid "All"
 msgstr ""
 
 msgid "Update Live-TV Bouquet"
@@ -184,14 +187,6 @@ msgstr ""
 msgid "Location the configuration data are stored in."
 msgstr ""
 
-msgid "The package has been installed. Restart Enigma2 now to load the update?"
-msgstr ""
-
-msgid ""
-"A newer RakutenTVCockpit package (%s) is available. Do you want to install "
-"it now?"
-msgstr ""
-
 msgid "RakutenTVCockpit"
 msgstr ""
 
@@ -202,4 +197,16 @@ msgid "Download Rakuten TV bouquet and picons"
 msgstr ""
 
 msgid "Silently download Rakuten TV"
+msgstr ""
+
+msgid "Do you want to resume this playback?"
+msgstr ""
+
+msgid "Resume position at %s"
+msgstr ""
+
+msgid "%s has been updated. Restart Enigma2 now to use the new version?"
+msgstr ""
+
+msgid "A newer %s package (%s) is available. Do you want to install it now?"
 msgstr ""
