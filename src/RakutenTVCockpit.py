@@ -21,7 +21,7 @@ from enigma import BT_KEEP_ASPECT_RATIO, BT_SCALE, BT_HALIGN_CENTER, BT_VALIGN_C
 from skin import parameters
 
 from . import _
-from .RakutenTVConfig import REGION_NAMES, getselectedregions
+from .ConfigInit import REGION_NAMES, getselectedregions
 from .RakutenTVRequest import rakutenRequest
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .PRSUtils import PRSUtils

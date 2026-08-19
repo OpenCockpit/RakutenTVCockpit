@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 from Components.config import config
 import requests
 
-from .RakutenTVConfig import CLASSIFICATION_IDS
+from .ConfigInit import CLASSIFICATION_IDS
 from .Variables import USER_AGENT
 from .Debug import logger
 
@@ -43,6 +43,8 @@ class RakutenTVRequest:
             "market_code": region,
         }
 
+    LIVE_CHANNELS_PER_PAGE = 50
+
     def getLiveChannels(self, region=None):
         """Fetch live channels from Rakuten TV API. Returns list of channel dicts."""
         region = region or config.plugins.rakutentv.region.value
@@ -51,20 +53,26 @@ class RakutenTVRequest:
             return self._channels_cache[region]
 
         params = self._get_base_params(region)
-        params["page"] = 1
-        params["per_page"] = 200
+        params["per_page"] = self.LIVE_CHANNELS_PER_PAGE
 
+        channels = []
         try:
-            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            channels = data.get("data", [])
+            page = 1
+            total_pages = 1
+            while page <= total_pages:
+                params["page"] = page
+                response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                channels.extend(data.get("data", []))
+                total_pages = data.get("meta", {}).get("pagination", {}).get("total_pages", 1)
+                page += 1
             self._channels_cache[region] = channels
             self._channels_cache_time[region] = now
             logger.debug("getLiveChannels: %s channels for %s", len(channels), region)
             return channels
         except Exception as e:
-            logger.debug("getLiveChannels error: %s", e)
+            logger.error("getLiveChannels error for %s: %s", region, e)
             return self._channels_cache.get(region, [])
 
     def getLiveChannelCategories(self, region=None):
@@ -86,7 +94,7 @@ class RakutenTVRequest:
             logger.debug("getLiveChannelCategories: %s categories for %s", len(categories), region)
             return categories
         except Exception as e:
-            logger.debug("getLiveChannelCategories error: %s", e)
+            logger.error("getLiveChannelCategories error for %s: %s", region, e)
             return self._categories_cache.get(region, [])
 
     def getLiveStreamURL(self, channel_id, language_id, region=None):
@@ -120,7 +128,7 @@ class RakutenTVRequest:
             if stream_infos:
                 return stream_infos[0].get("url", "")
         except Exception as e:
-            logger.debug("getLiveStreamURL error for %s: %s", channel_id, e)
+            logger.error("getLiveStreamURL error for %s: %s", channel_id, e)
         return ""
 
     def getChannels(self, region=None):
@@ -215,11 +223,17 @@ class RakutenTVRequest:
         return ""
 
     def _fetchEPGWindow(self, region, start_dt, end_dt):
-        """Fetch one EPG window from the API. Returns list of channel dicts."""
+        """Fetch one EPG window from the API. Returns list of channel dicts.
+
+        Paginated the same way as getLiveChannels() - per_page must stay
+        under Rakuten's ~70-79 cap (see LIVE_CHANNELS_PER_PAGE) or the API
+        returns 400 Bad Request; this used to request per_page=250 and fail
+        outright on every call for regions with enough channels to matter.
+        """
         duration_minutes = int((end_dt - start_dt).total_seconds() / 60)
         params = self._get_base_params(region)
         params.update({
-            "per_page": 250,
+            "per_page": self.LIVE_CHANNELS_PER_PAGE,
             "device_stream_audio_quality": "2.0",
             "device_stream_hdr_type": "NONE",
             "device_stream_video_quality": "FHD",
@@ -229,13 +243,22 @@ class RakutenTVRequest:
             "epg_ends_at": end_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
             "epg_ends_at_timestamp": int(end_dt.timestamp()),
         })
+        channels = []
         try:
-            response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=60)
-            response.raise_for_status()
-            return response.json().get("data", [])
+            page = 1
+            total_pages = 1
+            while page <= total_pages:
+                params["page"] = page
+                response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=60)
+                response.raise_for_status()
+                data = response.json()
+                channels.extend(data.get("data", []))
+                total_pages = data.get("meta", {}).get("pagination", {}).get("total_pages", 1)
+                page += 1
+            return channels
         except Exception as e:
-            logger.debug("getEPG window error: %s", e)
-            return []
+            logger.error("getEPG window error for %s: %s", region, e)
+            return channels
 
     def getEPG(self, region=None, hours=48):
         """Fetch EPG data from the Rakuten TV API and return XMLTV XML bytes.

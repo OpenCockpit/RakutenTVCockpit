@@ -6,6 +6,7 @@ from skin import findSkinScreen
 
 from .PluginUpgrade import checkPluginUpdateAndOpen
 from . import _
+from . import ConfigInit  # noqa: F401, pylint: disable=unused-import
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .RakutenTVCockpit import RakutenTVCockpit
 from .Variables import PLUGIN_ICON

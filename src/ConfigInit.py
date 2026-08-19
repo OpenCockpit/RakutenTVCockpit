@@ -86,5 +86,4 @@ config.plugins.rakutentv.silentmode = ConfigSelection(default="yes", choices=[("
 config.plugins.rakutentv.auto_update_check = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
 config.plugins.rakutentv.config_folder = ConfigDirectory(default="/etc/enigma2")
 
-
 getselectedregions = setupLocationSlots(config.plugins.rakutentv, "live_tv_region", REGION_NAMES, NUMBER_OF_LIVETV_BOUQUETS, _("None"), first_default="de")

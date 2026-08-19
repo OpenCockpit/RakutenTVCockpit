@@ -12,7 +12,7 @@ from Screens.Screen import Screen
 from enigma import eTimer
 
 from . import _
-from .RakutenTVConfig import REGION_NAMES, TSIDS, getselectedregions
+from .ConfigInit import REGION_NAMES, TSIDS, getselectedregions
 from .RakutenTVRequest import rakutenRequest
 from .Variables import TIMER_FILE, NODATA_FILE, BOUQUET_FILE, BOUQUET_NAME, CHANNELLIST_FILE, XMLTV_FILE
 from .CockpitTVDownload import TVDownloadBase, TVDownloadScreenMixin, TVDownloadSilentMixin, importXMLTVGuide

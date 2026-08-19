@@ -9,7 +9,7 @@ from Components.Sources.StaticText import StaticText
 from Screens.Setup import Setup
 
 from . import _
-from .RakutenTVConfig import NUMBER_OF_LIVETV_BOUQUETS
+from .ConfigInit import NUMBER_OF_LIVETV_BOUQUETS
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .PiconFetcher import PiconFetcher
 from .Variables import BOUQUET_FILE
@@ -44,6 +44,7 @@ class RakutenTVSetup(Setup):
         configList.append((_("Picon type"), config.plugins.rakutentv.picons, _("Using service name picons means they will continue to work even if the service reference changes.")))
         configList.append((_("Automatic update check"), config.plugins.rakutentv.auto_update_check, _("Automatically check for a newer package update when the plugin GUI is opened.")))
         configList.append((_("Data location"), config.plugins.rakutentv.config_folder, _("Location the configuration data are stored in.")))
+        configList.append((_("Log level"), config.plugins.rakutentvcockpit.debug_log_level, _("Select the level for debug logging.")))
         self["config"].list = configList
 
     def _locationConfigChanged(self):
