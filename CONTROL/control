@@ -1,5 +1,5 @@
 Description: RakutenTVCockpit
+Maintainer: xcentaurix
 Package: enigma2-plugin-extensions-rakutentvcockpit
-Version: 0.14.3
 Architecture: all
 Depends: enigma2-plugin-extensions-epgimport
