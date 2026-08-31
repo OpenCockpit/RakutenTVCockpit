@@ -54,6 +54,7 @@ def Plugins(**_kwargs):
         PluginDescriptor(
             name=_("Silently download Rakuten TV"),
             where=PluginDescriptor.WHERE_SESSIONSTART,
-            fnc=sessionstart
+            fnc=sessionstart,
+            needsRestart=True
         ),
     ]
