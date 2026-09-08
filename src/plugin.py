@@ -3,7 +3,6 @@
 
 from Components.config import config
 from Plugins.Plugin import PluginDescriptor
-from skin import findSkinScreen
 
 from .PluginUpgrade import checkPluginUpdateAndOpen
 from . import _
@@ -12,12 +11,11 @@ from .RakutenTVDownload import RakutenTVDownload, Silent
 from .RakutenTVCockpit import RakutenTVCockpit
 from .Variables import PLUGIN_ICON
 from .SkinUtils import loadPluginSkin
-from .Version import VERSION
+from .Version import VERSION, PLUGIN
 from .Debug import logger
 
 
-if findSkinScreen("RakutenTVCockpit") is None:
-    loadPluginSkin()
+loadPluginSkin(PLUGIN)
 
 
 def sessionstart(reason, session, **_kwargs):  # pylint: disable=unused-argument

@@ -103,6 +103,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self.updateDataTimer = eTimer()
         self.updateDataTimer.callback.append(self._do_update_data)
         self.initialise()
+        self.onLayoutFinish.append(self["info"].hide)
         self.onLayoutFinish.append(self.getCategories)
 
     def initialise(self):
@@ -164,7 +165,12 @@ class RakutenTVCockpit(Screen, HelpableScreen):
 
     def updateInfo(self):
         spacer = "\n" if self.vinfo or self.description else ""
-        self["info"].setText("\n".join([x for x in (self.vinfo, self.description, spacer) if x]))
+        text = "\n".join([x for x in (self.vinfo, self.description, spacer) if x])
+        self["info"].setText(text)
+        if text:
+            self["info"].show()
+        else:
+            self["info"].hide()
 
     def downloadPostersCallback(self, filename, name):
         if name == self.picname:
