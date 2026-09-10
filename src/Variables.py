@@ -11,7 +11,6 @@ TIMER_FILE = os.path.join(os.path.realpath(resolveFilename(SCOPE_CONFIG)), PLUGI
 NODATA_FILE = os.path.join(os.path.realpath(resolveFilename(SCOPE_CONFIG)), PLUGIN, PLUGIN + ".nodata")
 RESUMEPOINTS_FILE = os.path.join(os.path.realpath(resolveFilename(SCOPE_CONFIG)), PLUGIN, "resumepoints.pkl")
 PLUGIN_FOLDER = os.path.dirname(os.path.realpath(__file__))
-PLUGIN_ICON = "plugin.jpg"
 BOUQUET_FILE = "userbouquet.rakutentvcockpit_%s.tv"
 BOUQUET_NAME = "Rakuten TV Cockpit (%s)"
 CHANNELLIST_FILE = "channellist.rakutentvcockpit_%s.m3u8"

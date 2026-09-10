@@ -9,7 +9,6 @@ from . import _
 from . import ConfigInit  # noqa: F401, pylint: disable=unused-import
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .RakutenTVCockpit import RakutenTVCockpit
-from .Variables import PLUGIN_ICON
 from .SkinUtils import loadPluginSkin
 from .Version import VERSION, PLUGIN
 from .Debug import logger
@@ -38,7 +37,7 @@ def Plugins(**_kwargs):
         PluginDescriptor(
             name=_("RakutenTVCockpit"),
             where=PluginDescriptor.WHERE_PLUGINMENU,
-            icon=PLUGIN_ICON,
+            icon="plugin.png",
             description=_("Live-TV Bouquet Management"),
             fnc=system,
             needsRestart=True
