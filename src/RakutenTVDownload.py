@@ -134,7 +134,7 @@ class RakutenTVDownload(TVDownloadScreenMixin, RakutenTVDownloadBase, Screen):
     def __init__(self, session, locations=None):
         self.session = session
         Screen.__init__(self, session)
-        self.skinName = "DownloadProgress"
+        self.skinName = "PRSDownloadProgress"
         self.title = _("Rakuten TV updating")
         RakutenTVDownloadBase.__init__(self, locations=locations)
         self.total = 0
