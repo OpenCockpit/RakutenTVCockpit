@@ -3,7 +3,6 @@
 
 import os
 from time import strftime, gmtime, localtime
-from urllib.parse import quote
 from twisted.internet import threads
 
 from Components.ActionMap import HelpableActionMap
@@ -19,7 +18,7 @@ from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Tools.Directories import fileExists, isPluginInstalled
 from Tools.LoadPixmap import LoadPixmap
-from enigma import BT_KEEP_ASPECT_RATIO, BT_SCALE, BT_HALIGN_CENTER, BT_VALIGN_CENTER, eServiceReference, eTimer
+from enigma import BT_KEEP_ASPECT_RATIO, BT_SCALE, BT_HALIGN_CENTER, BT_VALIGN_CENTER, eTimer
 from skin import parameters
 
 from . import _
@@ -31,7 +30,9 @@ from .CockpitTVDownload import loadNoDataLocations
 from .Variables import TIMER_FILE, NODATA_FILE, BOUQUET_FILE
 from .PRSList import PRSList
 from .RakutenTVSetup import RakutenTVSetup
-from .PRSPlayer import PRSPlayer
+from .PRSCockpitPlayer import PRSCockpitPlayer
+from .PRSServiceCenter import ServiceCenter
+from .PRSServiceRef import liveReference
 from .Debug import logger
 
 _utils = PRSUtils(config.plugins.rakutentv)
@@ -46,6 +47,8 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         Screen.__init__(self, session)
         self.skinName = "RakutenTVCockpit"
         HelpableScreen.__init__(self)
+        self.service_center = ServiceCenter()
+        self.last_service = None
 
         self.colors = parameters.get("RakutenTvColors", [])
 
@@ -257,7 +260,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
             sid = film[0]
             name = film[1]
             language_id = film[10]
-            threads.deferToThread(rakutenRequest.getLiveStreamURL, sid, language_id, self.region).addCallback(lambda url, n=name, s=sid: self.playStream(n, s, url) if url else None)
+            threads.deferToThread(rakutenRequest.getLiveStreamURL, sid, language_id, self.region).addCallback(lambda url, n=name, s=sid, d=film[2], t=film[5]: self.playStream(n, s, url, d, t) if url else None)
 
     def back(self):
         if not (selection := self.getSelection()):
@@ -282,12 +285,18 @@ class RakutenTVCockpit(Screen, HelpableScreen):
             if not self.history:
                 self["poster"].hide()
 
-    def playStream(self, name, sid, url=None):
+    def playStream(self, name, sid, url=None, description="", duration=0):
         if url and name:
-            string = f"4097:0:0:0:0:0:0:0:0:0:{quote(url)}:{quote(name)}"
-            reference = eServiceReference(string)
+            reference = liveReference(BOUQUET_FILE % self.region, name, url)
             if "m3u8" in url.lower():
-                self.session.open(PRSPlayer, service=reference, sid=sid, resume_points=resumePointsInstance)
+                self.service_center.setMovie(name, description, duration)
+                self.last_service = self.session.nav.getCurrentlyPlayingServiceOrGroup()
+                self.session.openWithCallback(self._playerClosed, PRSCockpitPlayer, reference, sid, resumePointsInstance, self.service_center, config.plugins.rakutentv, live=True)
+
+    def _playerClosed(self, *_args):
+        if self.last_service:
+            self.session.nav.playService(self.last_service)
+        self["feedlist"].refresh()
 
     def green(self):
         locations = [x for x in getselectedregions() if x] or [config.plugins.rakutentv.region.value]

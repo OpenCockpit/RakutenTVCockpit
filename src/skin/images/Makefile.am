@@ -1,2 +1,3 @@
 installdir = $(libdir)/enigma2/python/Plugins/Extensions/RakutenTVCockpit/skin/images
-install_DATA = *.jpg *.png
+SUBDIRS = dvr_controls
+install_DATA = *.jpg *.png *.svg
