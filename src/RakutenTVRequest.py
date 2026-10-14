@@ -6,17 +6,23 @@ from datetime import datetime, timedelta, timezone
 from xml.sax.saxutils import escape
 
 from Components.config import config
+from Plugins.SystemPlugins.StreamProxyCockpit import StreamProxy
 import requests
 
-from .ConfigInit import CLASSIFICATION_IDS
+from .ConfigInit import CLASSIFICATION_IDS, TSIDS
 from .Variables import USER_AGENT
 from .Debug import logger
+from .CockpitTVDownload import FailureTracker
 
 
-class RakutenTVRequest:
+class RakutenTVRequest(FailureTracker):
     """API handler for Rakuten TV FAST channels."""
 
     API_BASE = "https://gizmo.rakuten.tv/v3"
+    # The bouquets address a channel as rakutentv://<id>, StreamProxyCockpit resolves it when it is played or recorded
+    SCHEME = "rakutentv"
+    RAKUTEN_SCHEMA = SCHEME + "%3a//"
+
     ORIGIN = "https://rakuten.tv"
     REFERER = "https://rakuten.tv/"
 
@@ -44,6 +50,7 @@ class RakutenTVRequest:
             "market_code": region,
         }
 
+    # Rakuten's API rejects per_page above roughly 70-79; stay well under that cap.
     LIVE_CHANNELS_PER_PAGE = 50
 
     def getLiveChannels(self, region=None):
@@ -57,6 +64,7 @@ class RakutenTVRequest:
         params["per_page"] = self.LIVE_CHANNELS_PER_PAGE
 
         channels = []
+        self.clearFailure(region)
         try:
             page = 1
             total_pages = 1
@@ -74,6 +82,7 @@ class RakutenTVRequest:
             return channels
         except Exception as e:
             logger.error("getLiveChannels error for %s: %s", region, e)
+            self.recordFailure(region, e)
             return self._channels_cache.get(region, [])
 
     def getLiveChannelCategories(self, region=None):
@@ -127,9 +136,12 @@ class RakutenTVRequest:
             result = response.json()
             stream_infos = result.get("data", {}).get("stream_infos", [])
             if stream_infos:
+                self.clearFailure(("stream", region))
                 return stream_infos[0].get("url", "")
         except Exception as e:
             logger.error("getLiveStreamURL error for %s: %s", channel_id, e)
+            # the streaming endpoint answers a region that is blocked for this box with 400 (or 403/451)
+            self.recordFailure(("stream", region), e, geoStatuses=(400, 403, 451))
         return ""
 
     def getChannels(self, region=None):
@@ -139,6 +151,7 @@ class RakutenTVRequest:
         raw_channels = self.getLiveChannels(region)
         categories_raw = self.getLiveChannelCategories(region)
 
+        # Build category lookup: channel_id -> category_name
         cat_map = {}
         for category in categories_raw:
             cat_name = category.get("name", "Uncategorized")
@@ -151,6 +164,7 @@ class RakutenTVRequest:
             if not ch_id:
                 continue
 
+            # Extract first language ID for streaming
             langs = []
             for lang in ch.get("labels", {}).get("languages", []):
                 lang_id = lang.get("id")
@@ -160,6 +174,7 @@ class RakutenTVRequest:
             logo = ""
             images = ch.get("images", {})
             if images:
+                # Try artwork, then snapshot, then any available
                 for key in ("artwork", "snapshot", "poster"):
                     if key in images:
                         logo = images[key]
@@ -167,6 +182,7 @@ class RakutenTVRequest:
                 if not logo:
                     logo = next(iter(images.values()), "")
 
+            # classification may contain a description
             classification = ch.get("classification", {})
             description = classification.get("description", "") if isinstance(classification, dict) else ""
 
@@ -177,7 +193,7 @@ class RakutenTVRequest:
                 "category": cat_map.get(ch_id, "Uncategorized"),
                 "description": description,
                 "logo": logo,
-                "stream_url": "",
+                "stream_url": "",  # resolved lazily
                 "language_id": langs[0] if langs else "ENG",
             })
 
@@ -222,6 +238,15 @@ class RakutenTVRequest:
             if ch["_id"] == channel_id:
                 return self.getLiveStreamURL(channel_id, ch.get("language_id", "ENG"), region)
         return ""
+
+    def getProxyURL(self, channel_id, region=None):
+        """The address of the stream proxy for a channel, to play or record it from.
+
+        The real stream address is not looked up here but by the proxy, on one of its own threads, the first time
+        the channel is used (and again when it no longer works): this runs on the main thread while Enigma2 zaps."""
+        region = region or config.plugins.rakutentv.region.value
+        return StreamProxy.registerChannel(self.SCHEME, channel_id, url_refresher=lambda: self.buildStreamURL(channel_id, region),
+                                           refresh_on_failure=True)
 
     def _fetchEPGWindow(self, region, start_dt, end_dt):
         """Fetch one EPG window from the API. Returns list of channel dicts.
@@ -294,6 +319,7 @@ class RakutenTVRequest:
             logger.debug("getEPG: no events for %s", region)
             return None
 
+        # Deduplicate by (channel, start, stop) in case windows overlap
         seen = set()
         unique = []
         for p in programmes:
@@ -334,3 +360,13 @@ class RakutenTVRequest:
 
 
 rakutenRequest = RakutenTVRequest()
+
+
+def resolveStream(channel_id, sref):
+    """StreamProxy provider: the address of the stream proxy for the Rakuten TV channel *channel_id*.
+
+    *sref* is the service reference of the bouquet entry; its TSID tells the region the channel was listed for.
+    It is the reference of the plugin's player for a channel played from the plugin, which has none: the region
+    set in the plugin is used then."""
+    region = {v: k for k, v in TSIDS.items()}.get(sref.toString().split(":")[4], None)
+    return rakutenRequest.getProxyURL(channel_id, region)

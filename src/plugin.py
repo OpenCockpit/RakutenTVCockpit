@@ -3,10 +3,12 @@
 
 from Components.config import config
 from Plugins.Plugin import PluginDescriptor
+from Plugins.SystemPlugins.StreamProxyCockpit import StreamProxy
 
 from .PluginUpgrade import checkPluginUpdateAndOpen
 from . import _
 from . import ConfigInit  # noqa: F401, pylint: disable=unused-import
+from .RakutenTVRequest import rakutenRequest, resolveStream
 from .RakutenTVDownload import RakutenTVDownload, Silent
 from .RakutenTVCockpit import RakutenTVCockpit
 from .SkinUtils import loadPluginSkin
@@ -15,6 +17,10 @@ from .Debug import logger
 
 
 loadPluginSkin(PLUGIN)
+
+# The bouquets address a channel as rakutentv://<id>. StreamProxyCockpit resolves such a service when it is played or
+# recorded and installs its service extensions while the plugin is loaded (see StreamProxy.registerProvider).
+StreamProxy.registerProvider(rakutenRequest.SCHEME, resolveStream)
 
 
 def sessionstart(reason, session, **_kwargs):  # pylint: disable=unused-argument

@@ -8,6 +8,7 @@ from .Variables import NUMBER_OF_LIVETV_BOUQUETS
 from .CockpitTVConfig import setupLocationSlots
 
 
+# Regions available on Rakuten TV (FAST channels)
 REGION_NAMES = {
     "at": "Austria",
     "ch": "Switzerland",
@@ -24,6 +25,9 @@ REGION_NAMES = {
     "ro": "Romania",
     "se": "Sweden",
     "uk": "United Kingdom",
+    # Appended (not alphabetized into the block above) so existing countries'
+    # TSIDS values - derived from REGION_NAMES's insertion order - don't shift
+    # and break already-imported EPG/timers for them.
     "al": "Albania",
     "ba": "Bosnia and Herzegovina",
     "be": "Belgium",
@@ -42,6 +46,7 @@ REGION_NAMES = {
     "sk": "Slovakia",
 }
 
+# Classification IDs for Rakuten TV API
 CLASSIFICATION_IDS = {
     "al": 270,
     "at": 300,
@@ -80,13 +85,19 @@ CLASSIFICATION_IDS = {
 TSIDS = {cc: f"{i:X}" for i, cc in enumerate(REGION_NAMES, 0x200)}
 
 
+# --- Config subsection ---------------------------------------------------
+
 config.plugins.rakutentv = ConfigSubsection()
 config.plugins.rakutentv.region = ConfigSelection(default="de", choices=list(REGION_NAMES.items()))
 config.plugins.rakutentv.picons = ConfigSelection(default="snp", choices=[("snp", _("service name")), ("srp", _("service reference")), ("", _("None"))])
 config.plugins.rakutentv.silentmode = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
 config.plugins.rakutentv.auto_update_check = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
+# Read by PRSCockpitPlayer (CockpitPlayer); not offered in the setup screen.
 config.plugins.rakutentv.movie_resume_at_last_pos = ConfigYesNo(default=False)
 config.plugins.rakutentv.movie_start_position = ConfigSelection(default="beginning", choices=[("beginning", _("beginning"))])
 config.plugins.rakutentv.config_folder = ConfigDirectory(default="/etc/enigma2")
+config.plugins.rakutentv.stream_proxy = ConfigYesNo(default=False)
+
+# --- Live-TV region config items -----------------------------------------
 
 getselectedregions = setupLocationSlots(config.plugins.rakutentv, "live_tv_region", REGION_NAMES, NUMBER_OF_LIVETV_BOUQUETS, _("None"), first_default="de")
