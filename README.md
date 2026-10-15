@@ -27,6 +27,8 @@ This repository has no control over the streams, links, or the legality of the c
 ## Limitations
 - Tested on OpenViX and OpenATV with DM900.
 
-## Links
-- Installation: https://OpenCockpit.github.io/RakutenTVCockpit
-- User Guide: https://github.com/OpenCockpit/RakutenTVCockpit/wiki
+## Installation
+- https://OpenCockpit.github.io/RakutenTVCockpit
+
+## Wiki
+- https://github.com/OpenCockpit/RakutenTVCockpit/wiki

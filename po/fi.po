@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RakutenTV\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 11:44+0200\n"
-"PO-Revision-Date: 2026-08-19 19:45+0300\n"
+"POT-Creation-Date: 2026-10-15 13:18+0300\n"
+"PO-Revision-Date: 2026-10-15 13:41+0300\n"
 "Last-Translator: Orlandox\n"
 "Language-Team: Orlandox\n"
 "Language: fi_FI\n"
@@ -11,9 +11,33 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
 "X-Poedit-Basepath: ../src\n"
 "X-Poedit-SearchPath-0: .\n"
+
+msgid "Infobar/Play"
+msgstr "Tietopalkki/Toista"
+
+msgid "Play/Pause"
+msgstr "Toista/Tauko"
+
+msgid "Stop playback"
+msgstr "Pysäytä toisto"
+
+msgid "Skip forward"
+msgstr "Siirry eteenpäin"
+
+msgid "Skip backward"
+msgstr "Siirry taaksepäin"
+
+msgid "EPG Info"
+msgstr "EPG:n tiedot"
+
+msgid "Do you want to resume playback at position: %d:%02d:%02d?"
+msgstr "Haluatko jatkaa toistoa kohdasta: %d:%02d:%02d?"
+
+msgid "End"
+msgstr "Loppu"
 
 msgid "service name"
 msgstr "kanavan nimi"
@@ -30,6 +54,33 @@ msgstr "Kyllä"
 msgid "No"
 msgstr "Ei"
 
+msgid "beginning"
+msgstr "alku"
+
+msgid "RakutenTVCockpit"
+msgstr "RakutenTVCockpit"
+
+msgid "Live-TV Bouquet Management"
+msgstr "Live-TV -suosikkilistan hallinta"
+
+msgid "Download Rakuten TV bouquet and picons"
+msgstr "Lataa Rakuten TV -suosikkilista ja kanavalogot"
+
+msgid "Silently download Rakuten TV"
+msgstr "Lataa Rakuten TV taustalla"
+
+msgid "%s has been updated. Restart Enigma2 now to use the new version?"
+msgstr "%s on päivitetty. Käynnistetäänkö Enigma2 uudelleen nyt uuden version käyttämiseksi?"
+
+msgid "A newer %s package (%s) is available. Do you want to install it now?"
+msgstr "Uudempi %s-paketti (%s) on saatavilla. Haluatko asentaa sen nyt?"
+
+msgid "Do you want to resume this playback?"
+msgstr "Haluatko jatkaa toistoa?"
+
+msgid "Resume position at %s"
+msgstr "Jatka kohdasta %s"
+
 msgid "Channel Categories"
 msgstr "Kanavakategoriat"
 
@@ -43,10 +94,7 @@ msgid "TMDb Search"
 msgstr "TMDB-haku"
 
 msgid "IMDb Search"
-msgstr "IMDb-haku"
-
-msgid "MENU"
-msgstr "MENU"
+msgstr "IMDB-haku"
 
 msgid "Go forward one level including starting playback"
 msgstr "Siirry taso eteenpäin ja aloita toisto"
@@ -141,6 +189,18 @@ msgstr "Odota..."
 msgid "Updating: Rakuten TV %s"
 msgstr "Päivitetään: Rakuten TV %s"
 
+msgid "Rakuten TV refused the request for %s (HTTP %s). It may be geo-blocked."
+msgstr "Rakuten TV hylkäsi pyynnön kohteelle %s (HTTP %s). Se saattaa olla geoblokattu."
+
+msgid "Rakuten TV could not be reached for %s%s. Try again later."
+msgstr "Rakuten TV:hen ei saatu yhteyttä %s%s. Yritä myöhemmin uudelleen."
+
+msgid "Rakuten TV lists channels for %s, but no stream address could be resolved for any of them. The streams may be geo-blocked or unavailable."
+msgstr "Rakuten TV listaa kanavia kohteelle %s, mutta millekään niistä ei voitu selvittää striimi-osoitetta. Striimit saattavat olla geoblokattuja tai eivät ole käytettävissä."
+
+msgid "Rakuten TV has no channels for %s. It may not be available in your region."
+msgstr "Kohteelle %s ei löytynyt tietoja. Tämä voi johtua maarajoituksesta, tai Rakuten TV ei ole saatavilla alueellasi."
+
 msgid "Remove picons"
 msgstr "Poista kanavalogot"
 
@@ -183,56 +243,14 @@ msgstr "Tietojen tallennuspaikka"
 msgid "Location the configuration data are stored in."
 msgstr "Sijainti, johon konfiguraatiotiedot tallennetaan."
 
+msgid "Stream proxy"
+msgstr "Striimipalvelin"
+
+msgid "Play and record through StreamProxyCockpit, which keeps the ad breaks of the streams from disturbing playback and recordings. Off: the bouquet holds the real stream addresses. The bouquet of each setting is kept, so changing it switches between them; one that doesn't exist yet, or is older than 5 hours, is generated."
+msgstr "Toista ja tallenna StreamProxyCockpitin kautta, joka estää striimien mainoskatkoja häiritsemästä toistoa ja tallennuksia. Pois päältä: suosikkilista sisältää todelliset striimiosoitteet. Kunkin asetuksen suosikkilista säilytetään, joten sen muuttaminen vaihtaa niiden välillä; sellainen, jota ei vielä ole olemassa tai joka on yli 5 tuntia vanha, luodaan."
+
 msgid "Log level"
 msgstr "Lokitaso"
 
 msgid "Select the level for debug logging."
 msgstr "Valitse debug-lokituksen taso."
-
-msgid "RakutenTVCockpit"
-msgstr "RakutenTVCockpit"
-
-msgid "Live-TV Bouquet Management"
-msgstr "Live-TV -suosikkilistan hallinta"
-
-msgid "Download Rakuten TV bouquet and picons"
-msgstr "Lataa Rakuten TV -suosikkilista ja kanavalogot"
-
-msgid "Silently download Rakuten TV"
-msgstr "Lataa Rakuten TV taustalla"
-
-msgid "Do you want to resume this playback?"
-msgstr "Haluatko jatkaa toistoa?"
-
-msgid "Resume position at %s"
-msgstr "Jatka kohdasta %s"
-
-msgid "%s has been updated. Restart Enigma2 now to use the new version?"
-msgstr "%s on päivitetty. Käynnistetäänkö Enigma2 uudelleen nyt uuden version käyttämiseksi?"
-
-msgid "A newer %s package (%s) is available. Do you want to install it now?"
-msgstr "Uudempi %s-paketti (%s) on saatavilla. Haluatko asentaa sen nyt?"
-
-msgid "End"
-msgstr ""
-
-msgid "Infobar/Play"
-msgstr ""
-
-msgid "Play/Pause"
-msgstr ""
-
-msgid "Stop playback"
-msgstr ""
-
-msgid "Skip forward"
-msgstr ""
-
-msgid "Skip backward"
-msgstr ""
-
-msgid "EPG Info"
-msgstr ""
-
-msgid "Do you want to resume playback at position: %d:%02d:%02d?"
-msgstr ""
