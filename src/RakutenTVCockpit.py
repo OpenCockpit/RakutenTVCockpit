@@ -65,6 +65,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self["key_menu"] = Button("Menu")
         self["poster"] = Pixmap()
         self["posterBG"] = Label()
+        self["infoBG"] = Label()  # the canvas of the information field: shown with it
         self["info"] = ScrollLabel()
 
         self["feedlist"].onSelectionChanged.append(self.update_data)
@@ -107,6 +108,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self.updateDataTimer.callback.append(self._do_update_data)
         self.initialise()
         self.onLayoutFinish.append(self["info"].hide)
+        self.onLayoutFinish.append(self["infoBG"].hide)
         self.onLayoutFinish.append(self.getCategories)
 
     def initialise(self):
@@ -120,6 +122,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self["poster"].hide()
         self["posterBG"].hide()
         self["info"].setText("")
+        self["infoBG"].hide()
         self["vtitle"].setText("")
         self["loading"].show()
         self.title = _("Rakuten TV") + " - " + self.titlemenu
@@ -171,9 +174,11 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         text = "\n".join([x for x in (self.vinfo, self.description, spacer) if x])
         self["info"].setText(text)
         if text:
+            self["infoBG"].show()
             self["info"].show()
         else:
             self["info"].hide()
+            self["infoBG"].hide()
 
     def downloadPostersCallback(self, filename, name):
         if name == self.picname:
