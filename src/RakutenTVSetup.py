@@ -37,29 +37,29 @@ class RakutenTVSetup(Setup):
 
     def createSetup(self):
         configList = []
-        configList.append((_("Region"), config.plugins.rakutentv.region, _("Select the region for the channel list.")))
+        configList.append((_("Region"), config.plugins.rakutentvcockpit.region, _("Select the region for the channel list.")))
         configList.append(("---",))
         for n in range(1, NUMBER_OF_LIVETV_BOUQUETS + 1):
-            if n == 1 or getattr(config.plugins.rakutentv, "live_tv_region" + str(n - 1)).value:
-                configList.append((_("Live-TV bouquet %s") % n, getattr(config.plugins.rakutentv, "live_tv_region" + str(n)), _("Region for which Live-TV bouquet %s will be created.") % n))
+            if n == 1 or getattr(config.plugins.rakutentvcockpit, "live_tv_region" + str(n - 1)).value:
+                configList.append((_("Live-TV bouquet %s") % n, getattr(config.plugins.rakutentvcockpit, "live_tv_region" + str(n)), _("Region for which Live-TV bouquet %s will be created.") % n))
         configList.append(("---",))
-        configList.append((_("Picon type"), config.plugins.rakutentv.picons, _("Using service name picons means they will continue to work even if the service reference changes.")))
-        configList.append((_("Automatic update check"), config.plugins.rakutentv.auto_update_check, _("Automatically check for a newer package update when the plugin GUI is opened.")))
-        configList.append((_("Data location"), config.plugins.rakutentv.config_folder, _("Location the configuration data are stored in.")))
-        configList.append((_("Stream proxy"), config.plugins.rakutentv.stream_proxy, _("Play and record through StreamProxyCockpit, which keeps the ad breaks of the streams from disturbing playback and recordings. Off: the bouquet holds the real stream addresses. The bouquet of each setting is kept, so changing it switches between them; one that doesn't exist yet, or is older than 5 hours, is generated.")))
+        configList.append((_("Picon type"), config.plugins.rakutentvcockpit.picons, _("Using service name picons means they will continue to work even if the service reference changes.")))
+        configList.append((_("Automatic update check"), config.plugins.rakutentvcockpit.auto_update_check, _("Automatically check for a newer package update when the plugin GUI is opened.")))
+        configList.append((_("Data location"), config.plugins.rakutentvcockpit.config_folder, _("Location the configuration data are stored in.")))
+        configList.append((_("Stream proxy"), config.plugins.rakutentvcockpit.stream_proxy, _("Play and record through StreamProxyCockpit, which keeps the ad breaks of the streams from disturbing playback and recordings. Off: the bouquet holds the real stream addresses. The bouquet of each setting is kept, so changing it switches between them; one that doesn't exist yet, or is older than 5 hours, is generated.")))
         configList.append((_("Log level"), config.plugins.rakutentvcockpit.debug_log_level, _("Select the level for debug logging.")))
         self["config"].list = configList
 
     def _locationConfigChanged(self):
-        if config.plugins.rakutentv.region.isChanged():
+        if config.plugins.rakutentvcockpit.region.isChanged():
             return True
-        return any(getattr(config.plugins.rakutentv, "live_tv_region" + str(n)).isChanged() for n in range(1, NUMBER_OF_LIVETV_BOUQUETS + 1))
+        return any(getattr(config.plugins.rakutentvcockpit, "live_tv_region" + str(n)).isChanged() for n in range(1, NUMBER_OF_LIVETV_BOUQUETS + 1))
 
     def keySave(self):
         if self._locationConfigChanged():
             # generates the bouquets for the current "Stream proxy" setting as well
             self.session.openWithCallback(lambda *_: Setup.keySave(self), RakutenTVDownload)
-        elif config.plugins.rakutentv.stream_proxy.isChanged():
+        elif config.plugins.rakutentvcockpit.stream_proxy.isChanged():
             # the locations without a stored bouquet are generated on top of the setup, like above
             missing = Silent.switchBouquetVariants()
             if missing:
@@ -70,7 +70,7 @@ class RakutenTVSetup(Setup):
             Setup.keySave(self)
 
     def updateYellowButton(self):
-        if os.path.isdir(PiconFetcher(config.plugins.rakutentv.picons).pluginPiconDir):
+        if os.path.isdir(PiconFetcher(config.plugins.rakutentvcockpit.picons).pluginPiconDir):
             self["key_yellow"].text = _("Remove picons")
         else:
             self["key_yellow"].text = ""
@@ -85,7 +85,7 @@ class RakutenTVSetup(Setup):
 
     def yellow(self):
         if self["key_yellow"].text:
-            PiconFetcher(config.plugins.rakutentv.picons).removeall()
+            PiconFetcher(config.plugins.rakutentvcockpit.picons).removeall()
             self.updateYellowButton()
 
     def blue(self):

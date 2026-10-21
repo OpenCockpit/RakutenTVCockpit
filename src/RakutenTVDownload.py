@@ -67,19 +67,19 @@ class RakutenTVDownloadBase(TVDownloadBase):
     def _proxyEnabled(self):
         """True if the bouquet gets the lazy addresses StreamProxyCockpit resolves (setting "Stream proxy"), False for
         the addresses of the streams themselves."""
-        return config.plugins.rakutentv.stream_proxy.value
+        return config.plugins.rakutentvcockpit.stream_proxy.value
 
     def _selectedLocations(self):
         return getselectedregions()
 
     def _defaultLocation(self):
-        return config.plugins.rakutentv.region.value
+        return config.plugins.rakutentvcockpit.region.value
 
     def _picons_config(self):
-        return config.plugins.rakutentv.picons
+        return config.plugins.rakutentvcockpit.picons
 
     def _configFolder(self):
-        return config.plugins.rakutentv.config_folder.value
+        return config.plugins.rakutentvcockpit.config_folder.value
 
     def _fetchChannels(self, cc):
         return rakutenRequest.getChannels(cc)

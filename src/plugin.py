@@ -35,7 +35,7 @@ def Download_RakutenTV(session, **_kwargs):
 def system(session, **_kwargs):
     checkPluginUpdateAndOpen(
         session, "enigma2-plugin-extensions-rakutentvcockpit", "RakutenTVCockpit",
-        RakutenTVCockpit, config.plugins.rakutentv.auto_update_check,
+        RakutenTVCockpit, config.plugins.rakutentvcockpit.auto_update_check,
         also_check=(("enigma2-plugin-systemplugins-streamproxycockpit", "StreamProxyCockpit"),))
 
 

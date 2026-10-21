@@ -7,7 +7,7 @@ Open-Enigma2 plugin for Live-TV streams
 
 ## Configuration
 
-![Screenshot](r2.jpg)
+![Screenshot](r3.jpg)
 
 ## Video-On-Demand
 Rakuten TV offers Video-On-Demand but requires Widevine for playback

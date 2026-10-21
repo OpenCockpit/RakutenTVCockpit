@@ -55,7 +55,7 @@ class RakutenTVRequest(FailureTracker):
 
     def getLiveChannels(self, region=None):
         """Fetch live channels from Rakuten TV API. Returns list of channel dicts."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         now = time.time()
         if region in self._channels_cache and now - self._channels_cache_time.get(region, 0) < 4 * 3600:
             return self._channels_cache[region]
@@ -87,7 +87,7 @@ class RakutenTVRequest(FailureTracker):
 
     def getLiveChannelCategories(self, region=None):
         """Fetch channel categories from Rakuten TV API."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         now = time.time()
         if region in self._categories_cache and now - self._categories_cache_time.get(region, 0) < 4 * 3600:
             return self._categories_cache[region]
@@ -109,7 +109,7 @@ class RakutenTVRequest(FailureTracker):
 
     def getLiveStreamURL(self, channel_id, language_id, region=None):
         """Get HLS stream URL for a live channel via the AVOD streaming endpoint."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         params = self._get_base_params(region)
         params.update({
             "device_stream_audio_quality": "2.0",
@@ -147,7 +147,7 @@ class RakutenTVRequest(FailureTracker):
     def getChannels(self, region=None):
         """Get channels in a unified format (compatible with bouquet building).
         Returns list of channel dicts with _id, name, number, category, description, logo, stream_url, language_id."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         raw_channels = self.getLiveChannels(region)
         categories_raw = self.getLiveChannelCategories(region)
 
@@ -202,7 +202,7 @@ class RakutenTVRequest(FailureTracker):
 
     def getLiveCategories(self, region=None):
         """Get live channels grouped by category for the plugin browser UI."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         channels = self.getChannels(region)
         if not channels:
             return []
@@ -232,7 +232,7 @@ class RakutenTVRequest(FailureTracker):
 
     def buildStreamURL(self, channel_id, region=None):
         """Resolve the actual HLS stream URL for a channel."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         channels = self.getChannels(region)
         for ch in channels:
             if ch["_id"] == channel_id:
@@ -244,7 +244,7 @@ class RakutenTVRequest(FailureTracker):
 
         The real stream address is not looked up here but by the proxy, on one of its own threads, the first time
         the channel is used (and again when it no longer works): this runs on the main thread while Enigma2 zaps."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         return StreamProxy.registerChannel(self.SCHEME, channel_id, url_refresher=lambda: self.buildStreamURL(channel_id, region),
                                            refresh_on_failure=True)
 
@@ -289,7 +289,7 @@ class RakutenTVRequest(FailureTracker):
     def getEPG(self, region=None, hours=48):
         """Fetch EPG data from the Rakuten TV API and return XMLTV XML bytes.
         Fetches in 24-hour windows to avoid 503 errors on large regions."""
-        region = region or config.plugins.rakutentv.region.value
+        region = region or config.plugins.rakutentvcockpit.region.value
         now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
         end = now + timedelta(hours=hours)
 

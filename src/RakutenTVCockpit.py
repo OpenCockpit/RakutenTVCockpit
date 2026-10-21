@@ -35,7 +35,7 @@ from .PRSServiceCenter import ServiceCenter
 from .PRSServiceRef import liveReference
 from .Debug import logger
 
-_utils = PRSUtils(config.plugins.rakutentv)
+_utils = PRSUtils(config.plugins.rakutentvcockpit)
 downloadPoster = _utils.downloadPoster
 resumePointsInstance = _utils.resumePoints
 
@@ -112,7 +112,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self.onLayoutFinish.append(self.getCategories)
 
     def initialise(self):
-        self.region = config.plugins.rakutentv.region.value
+        self.region = config.plugins.rakutentvcockpit.region.value
         self.films = []
         self.menu = []
         self.history = []
@@ -295,7 +295,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
             if "m3u8" in url.lower():
                 self.service_center.setMovie(name, description, duration)
                 self.last_service = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-                self.session.openWithCallback(self._playerClosed, PRSCockpitPlayer, reference, sid, resumePointsInstance, self.service_center, config.plugins.rakutentv, live=True)
+                self.session.openWithCallback(self._playerClosed, PRSCockpitPlayer, reference, sid, resumePointsInstance, self.service_center, config.plugins.rakutentvcockpit, live=True)
 
     def _playerClosed(self, *_args):
         if self.last_service:
@@ -303,7 +303,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
         self["feedlist"].refresh()  # pick up the resume point saved on leaving the player
 
     def green(self):
-        locations = [x for x in getselectedregions() if x] or [config.plugins.rakutentv.region.value]
+        locations = [x for x in getselectedregions() if x] or [config.plugins.rakutentvcockpit.region.value]
         if len(locations) <= 1:
             self.session.openWithCallback(self.endupdateLive, RakutenTVDownload)
             return
@@ -368,7 +368,7 @@ class RakutenTVCockpit(Screen, HelpableScreen):
 
     def loadSetup(self):
         def loadSetupCallback(_result=None):
-            if config.plugins.rakutentv.region.value != self.region:
+            if config.plugins.rakutentvcockpit.region.value != self.region:
                 self.initialise()
                 self.getCategories()
         self.session.openWithCallback(loadSetupCallback, RakutenTVSetup)

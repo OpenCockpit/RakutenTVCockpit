@@ -1,9 +1,10 @@
 # Copyright (C) 2026 by xcentaurix
 # License: GNU General Public License v3.0
 
-from Components.config import ConfigDirectory, ConfigSelection, ConfigSubsection, ConfigYesNo, config
+from Components.config import ConfigDirectory, ConfigSelection, ConfigYesNo, config
 
 from . import _
+from . import Debug  # noqa: F401, pylint: disable=unused-import
 from .Variables import NUMBER_OF_LIVETV_BOUQUETS
 from .CockpitTVConfig import setupLocationSlots
 
@@ -87,17 +88,22 @@ TSIDS = {cc: f"{i:X}" for i, cc in enumerate(REGION_NAMES, 0x200)}
 
 # --- Config subsection ---------------------------------------------------
 
-config.plugins.rakutentv = ConfigSubsection()
-config.plugins.rakutentv.region = ConfigSelection(default="de", choices=list(REGION_NAMES.items()))
-config.plugins.rakutentv.picons = ConfigSelection(default="snp", choices=[("snp", _("service name")), ("srp", _("service reference")), ("", _("None"))])
-config.plugins.rakutentv.silentmode = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
-config.plugins.rakutentv.auto_update_check = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
+# Debug creates config.plugins.rakutentvcockpit (with debug_log_level): the settings below join that subsection, it
+# must not be created again here.
+# The settings used to be config.plugins.rakutentv: take over what is stored there and drop it, so it isn't saved again.
+if oldValues := config.plugins.content.stored_values.pop("rakutentv", None):
+    for key, value in oldValues.items():
+        config.plugins.rakutentvcockpit.content.stored_values.setdefault(key, value)
+config.plugins.rakutentvcockpit.region = ConfigSelection(default="de", choices=list(REGION_NAMES.items()))
+config.plugins.rakutentvcockpit.picons = ConfigSelection(default="snp", choices=[("snp", _("service name")), ("srp", _("service reference")), ("", _("None"))])
+config.plugins.rakutentvcockpit.silentmode = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
+config.plugins.rakutentvcockpit.auto_update_check = ConfigSelection(default="yes", choices=[("yes", _("Yes")), ("no", _("No"))])
 # Read by PRSCockpitPlayer (CockpitPlayer); not offered in the setup screen.
-config.plugins.rakutentv.movie_resume_at_last_pos = ConfigYesNo(default=False)
-config.plugins.rakutentv.movie_start_position = ConfigSelection(default="beginning", choices=[("beginning", _("beginning"))])
-config.plugins.rakutentv.config_folder = ConfigDirectory(default="/etc/enigma2")
-config.plugins.rakutentv.stream_proxy = ConfigYesNo(default=False)
+config.plugins.rakutentvcockpit.movie_resume_at_last_pos = ConfigYesNo(default=False)
+config.plugins.rakutentvcockpit.movie_start_position = ConfigSelection(default="beginning", choices=[("beginning", _("beginning"))])
+config.plugins.rakutentvcockpit.config_folder = ConfigDirectory(default="/etc/enigma2")
+config.plugins.rakutentvcockpit.stream_proxy = ConfigYesNo(default=False)
 
 # --- Live-TV region config items -----------------------------------------
 
-getselectedregions = setupLocationSlots(config.plugins.rakutentv, "live_tv_region", REGION_NAMES, NUMBER_OF_LIVETV_BOUQUETS, _("None"), first_default="de")
+getselectedregions = setupLocationSlots(config.plugins.rakutentvcockpit, "live_tv_region", REGION_NAMES, NUMBER_OF_LIVETV_BOUQUETS, _("None"), first_default="de")
