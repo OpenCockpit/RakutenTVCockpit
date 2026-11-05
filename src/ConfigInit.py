@@ -102,7 +102,7 @@ config.plugins.rakutentvcockpit.auto_update_check = ConfigSelection(default="yes
 config.plugins.rakutentvcockpit.movie_resume_at_last_pos = ConfigYesNo(default=False)
 config.plugins.rakutentvcockpit.movie_start_position = ConfigSelection(default="beginning", choices=[("beginning", _("beginning"))])
 config.plugins.rakutentvcockpit.config_folder = ConfigDirectory(default="/etc/enigma2")
-config.plugins.rakutentvcockpit.stream_proxy = ConfigYesNo(default=False)
+config.plugins.rakutentvcockpit.stream_proxy = ConfigYesNo(default=True)
 
 # --- Live-TV region config items -----------------------------------------
 

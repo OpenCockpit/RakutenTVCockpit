@@ -21,9 +21,9 @@ screen:
               type: "EventName"
               text: "Name"
     - widget:
-        alphatest: "blend"
         borderColor: "FdLcdAmber"
         borderWidth: "2"
+        foregroundColor: "FdLcdWhite"
         position: "0,140"
         render: "Progress"
         size: "$screen_width-4,20"
