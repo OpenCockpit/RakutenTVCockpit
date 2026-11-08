@@ -1,0 +1,217 @@
+# Copyright (C) 2026 by xcentaurix
+# License: GNU General Public License v3.0
+
+import os
+import zlib
+
+from Components.ActionMap import ActionMap
+from Components.config import config
+from Components.Label import Label
+from Components.ProgressBar import ProgressBar
+from Screens.MessageBox import MessageBox
+from Screens.Screen import Screen
+from Plugins.SystemPlugins.StreamProxyCockpit.LiveProxyUnmuxed import PROXY_HOST, PROXY_PORT
+from enigma import eTimer
+
+from . import _
+from .ConfigInit import REGION_NAMES, TSIDS, getselectedregions
+from .RakutenTVRequest import rakutenRequest
+from .Variables import TIMER_FILE, NODATA_FILE, BOUQUET_FILE, BOUQUET_NAME, CHANNELLIST_FILE, XMLTV_FILE
+from .M3UPlaylist import writeM3UPlaylist
+from .CockpitTVDownload import TVDownloadBase, TVDownloadScreenMixin, TVDownloadSilentMixin, importXMLTVGuide, FAIL_GEO, FAIL_NETWORK, FAIL_NOSTREAM
+
+
+# Data paths for ignore list
+DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+RAKUTEN_IGNORE = "rakutentv.ignore"
+
+
+class RakutenTVDownloadBase(TVDownloadBase):
+    downloadActive = False
+
+    TIMER_FILE = TIMER_FILE
+    NODATA_FILE = NODATA_FILE
+    BOUQUET_FILE = BOUQUET_FILE
+    CHANNELLIST_FILE = CHANNELLIST_FILE
+    XMLTV_FILE = XMLTV_FILE
+    TSIDS = TSIDS
+
+    FINALIZE_DELAY = 3  # let the reactor paint 100% before the next region resets it to 0%
+    SILENT_IN_PROGRESS_TEXT = _("A silent download is in progress.")
+    PICONS_LABEL = _("picons")
+    FETCHING_PICONS_TEXT = _("Fetching picons...")
+    UPDATE_COMPLETED_TEXT = _("Live-TV update completed")
+    PROCESSING_TEXT = _("Processing data...")
+    WAITING_FOR_CHANNEL_TEXT = _("Waiting for Channel: ")
+    EPGIMPORT_MISSING_TEXT = _("EPGImport plugin not found - please install it to get EPG data for Rakuten TV.")
+
+    def __init__(self, silent=False, locations=None):
+        TVDownloadBase.__init__(self, silent, locations)
+        self.ignore_list = self._get_ignore_list()
+
+    @staticmethod
+    def _get_ignore_list():
+        """Load channel IDs to ignore from the ignore file."""
+        fpath = os.path.join(DATA_PATH, RAKUTEN_IGNORE)
+        ignores = set()
+        try:
+            with open(fpath, "r", encoding="utf-8") as fd:
+                for line in fd:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        ignores.add(line)
+        except FileNotFoundError:
+            pass
+        return ignores
+
+    def _proxyEnabled(self):
+        """True if the bouquet gets the lazy addresses StreamProxyCockpit resolves (setting "Stream proxy"), False for
+        the addresses of the streams themselves."""
+        return config.plugins.rakutentvcockpit.stream_proxy.value
+
+    def _selectedLocations(self):
+        return getselectedregions()
+
+    def _defaultLocation(self):
+        return config.plugins.rakutentvcockpit.region.value
+
+    def _picons_config(self):
+        return config.plugins.rakutentvcockpit.picons
+
+    def _configFolder(self):
+        return config.plugins.rakutentvcockpit.config_folder.value
+
+    def _fetchChannels(self, cc):
+        return rakutenRequest.getChannels(cc)
+
+    def _fetchFailure(self, cc):
+        return rakutenRequest.failure(cc)
+
+    def _streamFailure(self, cc):
+        # Rakuten answers the streams of a blocked region with an error (400): that is geo-blocking
+        return rakutenRequest.failure(("stream", cc))
+
+    def _bouquetName(self, cc):
+        return BOUQUET_NAME % REGION_NAMES.get(cc, cc).upper()
+
+    def _importGuide(self, cc):
+        """Import EPG events from the Rakuten TV API."""
+        xmltv_data = rakutenRequest.getEPG(cc)
+        if not xmltv_data:
+            return
+
+        # Build channel ref mapping: channel_id -> service ref
+        channels_map = {}
+        for cat in self.categories:
+            if cat in self.channelsList:
+                for ch_sid, _ch_hash, _ch_name, _ch_logourl, _id, _lang in self.channelsList[cat]:
+                    ref = f"4097:0:1:{ch_sid}:{self.tsid}:1:2:0:0:0"
+                    channels_map[_id] = ref
+                    channels_map[_id.lower()] = ref
+
+        path = os.path.join(self._configFolder(), self.XMLTV_FILE % cc)
+        if not importXMLTVGuide(self.epgcache, "RakutenTV", path, xmltv_data, channels_map):
+            self.epgimport_missing = True
+
+    def _buildBouquetEntry(self, key, chitem):
+        ch_sid, _ch_hash, ch_name, ch_logourl, _id, language_id = self.channelsList[key][chitem]
+        if self.bouquetProxy:
+            # lazy address, resolved by StreamProxyCockpit when the channel is played or recorded (see RakutenTVRequest)
+            stream_url = rakutenRequest.RAKUTEN_SCHEMA + _id
+        else:
+            # nothing resolves a lazy address without the stream proxy: the address of the stream itself, as before
+            stream_url = rakutenRequest.getLiveStreamURL(_id, language_id, self.bouquetCC).replace(":", "%3a")
+        ref = f"4097:0:1:{ch_sid}:{self.tsid}:1:2:0:0:0"
+        return ref, stream_url, ch_name, ch_logourl
+
+    def _afterBouquetWritten(self, cc, bouquet_name):
+        if not self.bouquetProxy:
+            super()._afterBouquetWritten(cc, bouquet_name)   # the playlist of the real stream addresses
+            return
+        # The bouquet's own rakutentv:// addresses only mean something to Enigma2 (see _buildBouquetEntry), so the
+        # exported playlist points to the stream proxy instead (only reachable from this box itself).
+        entries = {
+            group: [(chid, name, logo, f"http://{PROXY_HOST}:{PROXY_PORT}/auto/{chid}.m3u8")
+                    for _sid, chid, name, logo, _id, _lang in self.channelsList.get(group, [])]
+            for group in self.categories
+        }
+        writeM3UPlaylist(os.path.join(self._configFolder(), self.CHANNELLIST_FILE % cc), bouquet_name, self.categories, entries)
+
+    def buildM3U(self, channel):
+        logo = channel.get("logo", "")
+        group = channel.get("category", "")
+        _id = channel["_id"]
+
+        if _id in self.ignore_list:
+            return False
+
+        if group not in self.channelsList:
+            self.channelsList[group] = []
+            self.categories.append(group)
+
+        sid = int(channel["number"])
+        if sid <= 0:
+            sid = (zlib.crc32(_id.encode("utf-8")) & 0xFFFF) or 1
+        while sid in self.usedServiceIds:
+            sid = (sid + 1) & 0xFFFF or 1
+        self.usedServiceIds.add(sid)
+        number = f"{sid:X}"
+
+        self.channelsList[group].append((str(number), _id, channel["name"], logo, _id, channel.get("language_id", "ENG")))
+        return True
+
+
+class RakutenTVDownload(TVDownloadScreenMixin, RakutenTVDownloadBase, Screen):
+
+    EXIT_CONFIRM_TEXT = _("The download is in progress. Exit now?")
+
+    def __init__(self, session, locations=None):
+        self.session = session
+        Screen.__init__(self, session)
+        self.skinName = "PRSDownloadProgress"
+        self.title = _("Rakuten TV updating")
+        RakutenTVDownloadBase.__init__(self, locations=locations)
+        self.total = 0
+        self["progress"] = ProgressBar()
+        self["action"] = Label()
+        self.updateAction()
+        self["status"] = Label(_("Please wait..."))
+        self["actions"] = ActionMap(["OkCancelActions"], {"cancel": self.exit}, -1)
+        self.onFirstExecBegin.append(self.init)
+
+    def updateAction(self, cc=""):
+        self["action"].text = _("Updating: Rakuten TV %s") % cc.upper()
+
+    def noCategories(self, cc="", reason=None, detail=None):
+        # Informational only - the download continues with the next selected
+        # location, so this must not close the screen (openWithCallback would).
+        name = REGION_NAMES.get(cc, cc)
+        if reason == FAIL_GEO:
+            text = _("Rakuten TV refused the request for %s (HTTP %s). It may be geo-blocked.") % (name, detail)
+        elif reason == FAIL_NETWORK:
+            text = _("Rakuten TV could not be reached for %s%s. Try again later.") % (name, f" (HTTP {detail})" if detail else "")
+        elif reason == FAIL_NOSTREAM:
+            text = _("Rakuten TV lists channels for %s, but no stream address could be resolved for any of them. The streams may be geo-blocked or unavailable.") % name
+        else:
+            text = _("Rakuten TV has no channels for %s. It may not be available in your region.") % name
+        self.session.open(MessageBox, text, type=MessageBox.TYPE_ERROR, timeout=10)
+
+    def _restartSilentTimer(self):
+        Silent.stop()
+        Silent.start()
+
+
+class DownloadSilent(TVDownloadSilentMixin, RakutenTVDownloadBase):
+
+    BOUQUET_MARKER = "rakutentv"
+    FRIENDLY_NAME = "Rakuten TV"
+    LOCATION_WORD = "region"
+
+    def __init__(self):
+        self.afterUpdate = []
+        RakutenTVDownloadBase.__init__(self, silent=True)
+        self.timer = eTimer()
+        self.timer.timeout.get().append(self.download)
+
+
+Silent = DownloadSilent()

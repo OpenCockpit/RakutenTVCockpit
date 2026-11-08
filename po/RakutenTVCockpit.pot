@@ -1,0 +1,268 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: RakutenTV\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-14 15:18+0200\n"
+"PO-Revision-Date: 2026-10-14 15:23+0200\n"
+"Last-Translator: xcentaurix\n"
+"Language-Team: xcentaurix\n"
+"Language: de_DE@formal\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: ../src\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "service name"
+msgstr ""
+
+msgid "service reference"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "beginning"
+msgstr ""
+
+msgid "Channel Categories"
+msgstr ""
+
+msgid "Loading data... Please wait"
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "TMDb Search"
+msgstr ""
+
+msgid "IMDb Search"
+msgstr ""
+
+msgid "Go forward one level including starting playback"
+msgstr ""
+
+msgid "Go back one level including exiting"
+msgstr ""
+
+msgid "Create or update Rakuten TV live bouquets"
+msgstr ""
+
+msgid "Go back one level"
+msgstr ""
+
+msgid "Open the plugin configuration screen"
+msgstr ""
+
+msgid "Search for information in %s"
+msgstr ""
+
+msgid "The Movie Database"
+msgstr ""
+
+msgid "the Internet Movie Database"
+msgstr ""
+
+msgid "Scroll the information field"
+msgstr ""
+
+msgid "Rakuten TV"
+msgstr ""
+
+msgid ""
+"There is no data for %s. It may be caused by geo-blocking, or Rakuten TV may "
+"not be available in your region."
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Select a Live-TV bouquet to update"
+msgstr ""
+
+msgid ""
+"The Rakuten TV bouquets for %s in your channel list have been updated.\n"
+"\n"
+"They will now be rebuilt automatically every 5 hours."
+msgstr ""
+
+msgid "Update Live-TV Bouquet"
+msgstr ""
+
+msgid "Live-TV Bouquet last updated:"
+msgstr ""
+
+msgid "Live-TV Bouquet needs updating. Press GREEN."
+msgstr ""
+
+msgid "Create Live-TV Bouquet"
+msgstr ""
+
+msgid "A silent download is in progress."
+msgstr ""
+
+msgid "picons"
+msgstr ""
+
+msgid "Fetching picons..."
+msgstr ""
+
+msgid "Live-TV update completed"
+msgstr ""
+
+msgid "Processing data..."
+msgstr ""
+
+msgid "Waiting for Channel: "
+msgstr ""
+
+msgid ""
+"EPGImport plugin not found - please install it to get EPG data for Rakuten "
+"TV."
+msgstr ""
+
+msgid "The download is in progress. Exit now?"
+msgstr ""
+
+msgid "Rakuten TV updating"
+msgstr ""
+
+msgid "Please wait..."
+msgstr ""
+
+msgid "Updating: Rakuten TV %s"
+msgstr ""
+
+msgid "Rakuten TV refused the request for %s (HTTP %s). It may be geo-blocked."
+msgstr ""
+
+msgid "Rakuten TV could not be reached for %s%s. Try again later."
+msgstr ""
+
+msgid ""
+"Rakuten TV lists channels for %s, but no stream address could be resolved "
+"for any of them. The streams may be geo-blocked or unavailable."
+msgstr ""
+
+msgid ""
+"Rakuten TV has no channels for %s. It may not be available in your region."
+msgstr ""
+
+msgid "Remove picons"
+msgstr ""
+
+msgid "Rakuten TV Setup Actions"
+msgstr ""
+
+msgid "Remove Live-TV Bouquet"
+msgstr ""
+
+msgid "Rakuten TV Setup"
+msgstr ""
+
+msgid "Region"
+msgstr ""
+
+msgid "Select the region for the channel list."
+msgstr ""
+
+msgid "Live-TV bouquet %s"
+msgstr ""
+
+msgid "Region for which Live-TV bouquet %s will be created."
+msgstr ""
+
+msgid "Picon type"
+msgstr ""
+
+msgid ""
+"Using service name picons means they will continue to work even if the "
+"service reference changes."
+msgstr ""
+
+msgid "Automatic update check"
+msgstr ""
+
+msgid ""
+"Automatically check for a newer package update when the plugin GUI is opened."
+msgstr ""
+
+msgid "Data location"
+msgstr ""
+
+msgid "Location the configuration data are stored in."
+msgstr ""
+
+msgid "Stream proxy"
+msgstr ""
+
+msgid ""
+"Play and record through StreamProxyCockpit, which keeps the ad breaks of the "
+"streams from disturbing playback and recordings. Off: the bouquet holds the "
+"real stream addresses. The bouquet of each setting is kept, so changing it "
+"switches between them; one that doesn't exist yet, or is older than 5 hours, "
+"is generated."
+msgstr ""
+
+msgid "Log level"
+msgstr ""
+
+msgid "Select the level for debug logging."
+msgstr ""
+
+msgid "RakutenTVCockpit"
+msgstr ""
+
+msgid "Live-TV Bouquet Management"
+msgstr ""
+
+msgid "Download Rakuten TV bouquet and picons"
+msgstr ""
+
+msgid "Silently download Rakuten TV"
+msgstr ""
+
+msgid "End"
+msgstr ""
+
+msgid "Infobar/Play"
+msgstr ""
+
+msgid "Play/Pause"
+msgstr ""
+
+msgid "Stop playback"
+msgstr ""
+
+msgid "Skip forward"
+msgstr ""
+
+msgid "Skip backward"
+msgstr ""
+
+msgid "EPG Info"
+msgstr ""
+
+msgid "Do you want to resume playback at position: %d:%02d:%02d?"
+msgstr ""
+
+msgid "Do you want to resume this playback?"
+msgstr ""
+
+msgid "Resume position at %s"
+msgstr ""
+
+msgid "%s has been updated. Restart Enigma2 now to use the new version?"
+msgstr ""
+
+msgid "A newer %s package is available. Do you want to install it now?"
+msgstr ""

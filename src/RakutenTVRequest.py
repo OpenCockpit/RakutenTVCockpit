@@ -1,0 +1,372 @@
+# Copyright (C) 2026 by xcentaurix
+# License: GNU General Public License v3.0
+
+import time
+from datetime import datetime, timedelta, timezone
+from xml.sax.saxutils import escape
+
+from Components.config import config
+from Plugins.SystemPlugins.StreamProxyCockpit import StreamProxy
+import requests
+
+from .ConfigInit import CLASSIFICATION_IDS, TSIDS
+from .Variables import USER_AGENT
+from .Debug import logger
+from .CockpitTVDownload import FailureTracker
+
+
+class RakutenTVRequest(FailureTracker):
+    """API handler for Rakuten TV FAST channels."""
+
+    API_BASE = "https://gizmo.rakuten.tv/v3"
+    # The bouquets address a channel as rakutentv://<id>, StreamProxyCockpit resolves it when it is played or recorded
+    SCHEME = "rakutentv"
+    RAKUTEN_SCHEMA = SCHEME + "%3a//"
+
+    ORIGIN = "https://rakuten.tv"
+    REFERER = "https://rakuten.tv/"
+
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Origin": self.ORIGIN,
+            "Referer": self.REFERER,
+        })
+        self.requestCache = {}
+        self._channels_cache = {}
+        self._channels_cache_time = {}
+        self._categories_cache = {}
+        self._categories_cache_time = {}
+
+    def _get_classification_id(self, region):
+        return CLASSIFICATION_IDS.get(region, CLASSIFICATION_IDS.get("de", 307))
+
+    def _get_base_params(self, region):
+        return {
+            "classification_id": self._get_classification_id(region),
+            "device_identifier": "web",
+            "locale": region,
+            "market_code": region,
+        }
+
+    # Rakuten's API rejects per_page above roughly 70-79; stay well under that cap.
+    LIVE_CHANNELS_PER_PAGE = 50
+
+    def getLiveChannels(self, region=None):
+        """Fetch live channels from Rakuten TV API. Returns list of channel dicts."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        now = time.time()
+        if region in self._channels_cache and now - self._channels_cache_time.get(region, 0) < 4 * 3600:
+            return self._channels_cache[region]
+
+        params = self._get_base_params(region)
+        params["per_page"] = self.LIVE_CHANNELS_PER_PAGE
+
+        channels = []
+        self.clearFailure(region)
+        try:
+            page = 1
+            total_pages = 1
+            while page <= total_pages:
+                params["page"] = page
+                response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+                channels.extend(data.get("data", []))
+                total_pages = data.get("meta", {}).get("pagination", {}).get("total_pages", 1)
+                page += 1
+            self._channels_cache[region] = channels
+            self._channels_cache_time[region] = now
+            logger.debug("getLiveChannels: %s channels for %s", len(channels), region)
+            return channels
+        except Exception as e:
+            logger.error("getLiveChannels error for %s: %s", region, e)
+            self.recordFailure(region, e)
+            return self._channels_cache.get(region, [])
+
+    def getLiveChannelCategories(self, region=None):
+        """Fetch channel categories from Rakuten TV API."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        now = time.time()
+        if region in self._categories_cache and now - self._categories_cache_time.get(region, 0) < 4 * 3600:
+            return self._categories_cache[region]
+
+        params = self._get_base_params(region)
+
+        try:
+            response = self.session.get(f"{self.API_BASE}/live_channel_categories", params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            categories = data.get("data", [])
+            self._categories_cache[region] = categories
+            self._categories_cache_time[region] = now
+            logger.debug("getLiveChannelCategories: %s categories for %s", len(categories), region)
+            return categories
+        except Exception as e:
+            logger.error("getLiveChannelCategories error for %s: %s", region, e)
+            return self._categories_cache.get(region, [])
+
+    def getLiveStreamURL(self, channel_id, language_id, region=None):
+        """Get HLS stream URL for a live channel via the AVOD streaming endpoint."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        params = self._get_base_params(region)
+        params.update({
+            "device_stream_audio_quality": "2.0",
+            "device_stream_hdr_type": "NONE",
+            "device_stream_video_quality": "FHD",
+            "disable_dash_legacy_packages": False,
+        })
+        data = {
+            "audio_language": language_id,
+            "audio_quality": "2.0",
+            "classification_id": self._get_classification_id(region),
+            "content_id": channel_id,
+            "content_type": "live_channels",
+            "device_serial": "enigma2",
+            "player": "web:HLS-NONE:NONE",
+            "strict_video_quality": False,
+            "subtitle_language": "MIS",
+            "video_type": "stream",
+        }
+
+        try:
+            response = self.session.post(f"{self.API_BASE}/avod/streamings", params=params, json=data, timeout=10)
+            response.raise_for_status()
+            result = response.json()
+            stream_infos = result.get("data", {}).get("stream_infos", [])
+            if stream_infos:
+                self.clearFailure(("stream", region))
+                return stream_infos[0].get("url", "")
+        except Exception as e:
+            logger.error("getLiveStreamURL error for %s: %s", channel_id, e)
+            # the streaming endpoint answers a region that is blocked for this box with 400 (or 403/451)
+            self.recordFailure(("stream", region), e, geoStatuses=(400, 403, 451))
+        return ""
+
+    def getChannels(self, region=None):
+        """Get channels in a unified format (compatible with bouquet building).
+        Returns list of channel dicts with _id, name, number, category, description, logo, stream_url, language_id."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        raw_channels = self.getLiveChannels(region)
+        categories_raw = self.getLiveChannelCategories(region)
+
+        # Build category lookup: channel_id -> category_name
+        cat_map = {}
+        for category in categories_raw:
+            cat_name = category.get("name", "Uncategorized")
+            for ch_id in category.get("live_channels", []):
+                cat_map[ch_id] = cat_name
+
+        result = []
+        for ch in raw_channels:
+            ch_id = ch.get("id", "")
+            if not ch_id:
+                continue
+
+            # Extract first language ID for streaming
+            langs = []
+            for lang in ch.get("labels", {}).get("languages", []):
+                lang_id = lang.get("id")
+                if lang_id:
+                    langs.append(lang_id)
+
+            logo = ""
+            images = ch.get("images", {})
+            if images:
+                # Try artwork, then snapshot, then any available
+                for key in ("artwork", "snapshot", "poster"):
+                    if key in images:
+                        logo = images[key]
+                        break
+                if not logo:
+                    logo = next(iter(images.values()), "")
+
+            # classification may contain a description
+            classification = ch.get("classification", {})
+            description = classification.get("description", "") if isinstance(classification, dict) else ""
+
+            result.append({
+                "_id": ch_id,
+                "name": ch.get("title", ""),
+                "number": int(ch.get("channel_number", 0) or 0),
+                "category": cat_map.get(ch_id, "Uncategorized"),
+                "description": description,
+                "logo": logo,
+                "stream_url": "",  # resolved lazily
+                "language_id": langs[0] if langs else "ENG",
+            })
+
+        result.sort(key=lambda x: x["number"])
+        return result
+
+    def getLiveCategories(self, region=None):
+        """Get live channels grouped by category for the plugin browser UI."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        channels = self.getChannels(region)
+        if not channels:
+            return []
+
+        categories = {}
+        for ch in channels:
+            group = ch.get("category", "Uncategorized")
+            if group not in categories:
+                categories[group] = {
+                    "name": group,
+                    "items": [],
+                }
+            categories[group]["items"].append({
+                "_id": ch["_id"],
+                "name": ch.get("name", ""),
+                "summary": ch.get("description", ""),
+                "genre": group,
+                "rating": "",
+                "duration": 0,
+                "type": "channel",
+                "stream_url": "",
+                "logo": ch.get("logo", ""),
+                "language_id": ch.get("language_id", "ENG"),
+            })
+
+        return sorted(categories.values(), key=lambda x: x["name"].casefold())
+
+    def buildStreamURL(self, channel_id, region=None):
+        """Resolve the actual HLS stream URL for a channel."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        channels = self.getChannels(region)
+        for ch in channels:
+            if ch["_id"] == channel_id:
+                return self.getLiveStreamURL(channel_id, ch.get("language_id", "ENG"), region)
+        return ""
+
+    def getProxyURL(self, channel_id, region=None):
+        """The address of the stream proxy for a channel, to play or record it from.
+
+        The real stream address is not looked up here but by the proxy, on one of its own threads, the first time
+        the channel is used (and again when it no longer works): this runs on the main thread while Enigma2 zaps."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        return StreamProxy.registerChannel(self.SCHEME, channel_id, url_refresher=lambda: self.buildStreamURL(channel_id, region),
+                                           refresh_on_failure=True)
+
+    def _fetchEPGWindow(self, region, start_dt, end_dt):
+        """Fetch one EPG window from the API. Returns list of channel dicts.
+
+        Paginated the same way as getLiveChannels() - per_page must stay
+        under Rakuten's ~70-79 cap (see LIVE_CHANNELS_PER_PAGE) or the API
+        returns 400 Bad Request; this used to request per_page=250 and fail
+        outright on every call for regions with enough channels to matter.
+        """
+        duration_minutes = int((end_dt - start_dt).total_seconds() / 60)
+        params = self._get_base_params(region)
+        params.update({
+            "per_page": self.LIVE_CHANNELS_PER_PAGE,
+            "device_stream_audio_quality": "2.0",
+            "device_stream_hdr_type": "NONE",
+            "device_stream_video_quality": "FHD",
+            "epg_duration_minutes": duration_minutes,
+            "epg_starts_at": start_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+            "epg_starts_at_timestamp": int(start_dt.timestamp()),
+            "epg_ends_at": end_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+            "epg_ends_at_timestamp": int(end_dt.timestamp()),
+        })
+        channels = []
+        try:
+            page = 1
+            total_pages = 1
+            while page <= total_pages:
+                params["page"] = page
+                response = self.session.get(f"{self.API_BASE}/live_channels", params=params, timeout=60)
+                response.raise_for_status()
+                data = response.json()
+                channels.extend(data.get("data", []))
+                total_pages = data.get("meta", {}).get("pagination", {}).get("total_pages", 1)
+                page += 1
+            return channels
+        except Exception as e:
+            logger.error("getEPG window error for %s: %s", region, e)
+            return channels
+
+    def getEPG(self, region=None, hours=48):
+        """Fetch EPG data from the Rakuten TV API and return XMLTV XML bytes.
+        Fetches in 24-hour windows to avoid 503 errors on large regions."""
+        region = region or config.plugins.rakutentvcockpit.region.value
+        now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
+        end = now + timedelta(hours=hours)
+
+        channel_names = {}
+        programmes = []
+        cursor = now
+        while cursor < end:
+            window_end = min(cursor + timedelta(hours=24), end)
+            channels = self._fetchEPGWindow(region, cursor, window_end)
+            for ch in channels:
+                ch_id = ch.get("id", "")
+                if not ch_id:
+                    continue
+                if ch_id not in channel_names:
+                    channel_names[ch_id] = ch.get("title", "")
+                for prog in ch.get("live_programs", []):
+                    start = prog.get("starts_at", "")
+                    stop = prog.get("ends_at", "")
+                    if start and stop:
+                        programmes.append((ch_id, start, stop,
+                                           prog.get("title", ""),
+                                           prog.get("subtitle", "") or "",
+                                           prog.get("description", "") or ""))
+            cursor = window_end
+
+        if not programmes:
+            logger.debug("getEPG: no events for %s", region)
+            return None
+
+        # Deduplicate by (channel, start, stop) in case windows overlap
+        seen = set()
+        unique = []
+        for p in programmes:
+            key = (p[0], p[1], p[2])
+            if key not in seen:
+                seen.add(key)
+                unique.append(p)
+
+        lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<tv>']
+        for ch_id, title in channel_names.items():
+            lines.append(f'  <channel id="{escape(ch_id)}">')
+            lines.append(f'    <display-name>{escape(title)}</display-name>')
+            lines.append('  </channel>')
+        for ch_id, start, stop, title, subtitle, desc in unique:
+            start_fmt = self._to_xmltv_time(start)
+            stop_fmt = self._to_xmltv_time(stop)
+            if not start_fmt or not stop_fmt:
+                continue
+            lines.append(f'  <programme start="{start_fmt}" stop="{stop_fmt}" channel="{escape(ch_id)}">')
+            lines.append(f'    <title>{escape(title)}</title>')
+            if subtitle:
+                lines.append(f'    <sub-title>{escape(subtitle)}</sub-title>')
+            if desc:
+                lines.append(f'    <desc>{escape(desc)}</desc>')
+            lines.append('  </programme>')
+        lines.append('</tv>')
+        logger.debug("getEPG: %s events for %s", len(unique), region)
+        return "\n".join(lines).encode("utf-8")
+
+    @staticmethod
+    def _to_xmltv_time(iso_str):
+        """Convert ISO 8601 timestamp to XMLTV format (YYYYMMDDHHmmSS +0000)."""
+        try:
+            dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+            return dt.strftime("%Y%m%d%H%M%S %z")
+        except (ValueError, AttributeError):
+            return ""
+
+
+rakutenRequest = RakutenTVRequest()
+
+
+def resolveStream(channel_id, sref):
+    """StreamProxy provider: the address of the stream proxy for the Rakuten TV channel *channel_id*.
+
+    *sref* is the service reference of the bouquet entry; its TSID tells the region the channel was listed for.
+    It is the reference of the plugin's player for a channel played from the plugin, which has none: the region
+    set in the plugin is used then."""
+    region = {v: k for k, v in TSIDS.items()}.get(sref.toString().split(":")[4], None)
+    return rakutenRequest.getProxyURL(channel_id, region)

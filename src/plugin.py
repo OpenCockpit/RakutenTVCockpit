@@ -1,0 +1,75 @@
+# Copyright (C) 2026 by xcentaurix
+# License: GNU General Public License v3.0
+
+from Components.config import config
+from Plugins.Plugin import PluginDescriptor
+from Plugins.SystemPlugins.StreamProxyCockpit import StreamProxy
+
+from .PluginUpgrade import checkPluginUpdateAndOpen
+from . import _
+from . import ConfigInit  # noqa: F401, pylint: disable=unused-import
+from .RakutenTVRequest import rakutenRequest, resolveStream
+from .RakutenTVDownload import RakutenTVDownload, Silent
+from .RakutenTVCockpit import RakutenTVCockpit
+from .SkinUtils import loadPluginSkin
+from .Version import VERSION, PLUGIN
+from .Debug import logger
+
+
+loadPluginSkin(PLUGIN)
+
+# The bouquets address a channel as rakutentv://<id>. StreamProxyCockpit resolves such a service when it is played or
+# recorded and installs its service extensions while the plugin is loaded (see StreamProxy.registerProvider).
+StreamProxy.registerProvider(rakutenRequest.SCHEME, resolveStream)
+
+
+def sessionstart(reason, session, **_kwargs):  # pylint: disable=unused-argument
+    logger.info("+++ Version: %s starts...", VERSION)
+    Silent.init(session)
+
+
+def Download_RakutenTV(session, **_kwargs):
+    session.open(RakutenTVDownload)
+
+
+def system(session, **_kwargs):
+    checkPluginUpdateAndOpen(
+        session, "enigma2-plugin-extensions-rakutentvcockpit", "RakutenTVCockpit",
+        RakutenTVCockpit, config.plugins.rakutentvcockpit.auto_update_check,
+        also_check=(("enigma2-plugin-systemplugins-streamproxycockpit", "StreamProxyCockpit"),))
+
+
+def Plugins(**_kwargs):
+    descriptors = [
+        PluginDescriptor(
+            name=_("RakutenTVCockpit"),
+            where=PluginDescriptor.WHERE_PLUGINMENU,
+            icon="plugin.png",
+            description=_("Live-TV Bouquet Management"),
+            fnc=system,
+            needsRestart=True
+        ),
+        PluginDescriptor(
+            name=_("Download Rakuten TV bouquet and picons"),
+            where=PluginDescriptor.WHERE_EXTENSIONSMENU,
+            fnc=Download_RakutenTV,
+            needsRestart=True
+        ),
+        PluginDescriptor(
+            name=_("Silently download Rakuten TV"),
+            where=PluginDescriptor.WHERE_SESSIONSTART,
+            fnc=sessionstart,
+            needsRestart=True
+        )
+    ]
+    try:
+        descriptors += [
+            PluginDescriptor(
+                where=PluginDescriptor.WHERE_SKINCHANGE,
+                fnc=loadPluginSkin
+            )
+        ]
+    except Exception:
+        pass
+
+    return descriptors
