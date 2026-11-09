@@ -5,12 +5,14 @@ from Components.config import ConfigDirectory, ConfigSelection, ConfigYesNo, con
 
 from . import _
 from . import Debug  # noqa: F401, pylint: disable=unused-import
+from .CountryCodes import ISO3166
 from .Variables import NUMBER_OF_LIVETV_BOUQUETS
 from .CockpitTVConfig import setupLocationSlots
 
 
-# Regions available on Rakuten TV (FAST channels)
-REGION_NAMES = {
+# Regions available on Rakuten TV (FAST channels), with their English names. The names shown to the user (in the setup, in the names of
+# the bouquets) are REGION_NAMES below, which has the translated names of the country list of Common.
+_REGIONS = {
     "at": "Austria",
     "ch": "Switzerland",
     "de": "Germany",
@@ -27,7 +29,7 @@ REGION_NAMES = {
     "se": "Sweden",
     "uk": "United Kingdom",
     # Appended (not alphabetized into the block above) so existing countries'
-    # TSIDS values - derived from REGION_NAMES's insertion order - don't shift
+    # TSIDS values - derived from the insertion order of the regions - don't shift
     # and break already-imported EPG/timers for them.
     "al": "Albania",
     "ba": "Bosnia and Herzegovina",
@@ -83,7 +85,12 @@ CLASSIFICATION_IDS = {
     "uk": 18,
 }
 
-TSIDS = {cc: f"{i:X}" for i, cc in enumerate(REGION_NAMES, 0x200)}
+# The translated name of every region (what a Pluto TV bouquet does as well): the name of the ISO 3166 list, by country code (Rakuten says
+# "uk" where ISO 3166 says "GB"); a region that is not in that list keeps its English name.
+_ISO3166_NAMES = {country[1].lower(): country[0].split("(")[0].strip() for country in ISO3166}
+REGION_NAMES = {cc: _ISO3166_NAMES.get("gb" if cc == "uk" else cc, name) for cc, name in _REGIONS.items()}
+
+TSIDS = {cc: f"{i:X}" for i, cc in enumerate(_REGIONS, 0x200)}   # in the order of the regions above: appending keeps the ids of the others
 
 
 # --- Config subsection ---------------------------------------------------

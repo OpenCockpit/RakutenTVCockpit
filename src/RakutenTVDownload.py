@@ -92,7 +92,7 @@ class RakutenTVDownloadBase(TVDownloadBase):
         return rakutenRequest.failure(("stream", cc))
 
     def _bouquetName(self, cc):
-        return BOUQUET_NAME % REGION_NAMES.get(cc, cc).upper()
+        return BOUQUET_NAME % REGION_NAMES.get(cc, cc)
 
     def _importGuide(self, cc):
         """Import EPG events from the Rakuten TV API."""
