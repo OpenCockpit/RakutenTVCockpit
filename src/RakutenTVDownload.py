@@ -2,7 +2,6 @@
 # License: GNU General Public License v3.0
 
 import os
-import zlib
 
 from Components.ActionMap import ActionMap
 from Components.config import config
@@ -149,12 +148,8 @@ class RakutenTVDownloadBase(TVDownloadBase):
             self.channelsList[group] = []
             self.categories.append(group)
 
-        sid = int(channel["number"])
-        if sid <= 0:
-            sid = (zlib.crc32(_id.encode("utf-8")) & 0xFFFF) or 1
-        while sid in self.usedServiceIds:
-            sid = (sid + 1) & 0xFFFF or 1
-        self.usedServiceIds.add(sid)
+        # the id the channel had (see TVDownloadBase._assignServiceId), else the number of Rakuten TV
+        sid = self._assignServiceId(_id, int(channel["number"]))
         number = f"{sid:X}"
 
         self.channelsList[group].append((str(number), _id, channel["name"], logo, _id, channel.get("language_id", "ENG")))
