@@ -209,4 +209,21 @@ class DownloadSilent(TVDownloadSilentMixin, RakutenTVDownloadBase):
         self.timer.timeout.get().append(self.download)
 
 
-Silent = DownloadSilent()
+class LazySilent:
+    """Stands in for the one DownloadSilent instance until the session starts: it is created by create() (see
+    plugin.sessionstart), not while the plugin is imported. The first access to any attribute creates it as well, so
+    a user of Silent can not see a missing instance."""
+
+    def __init__(self):
+        self._instance = None
+
+    def create(self):
+        if self._instance is None:
+            self._instance = DownloadSilent()
+        return self._instance
+
+    def __getattr__(self, name):
+        return getattr(self.create(), name)
+
+
+Silent = LazySilent()

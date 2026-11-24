@@ -25,7 +25,7 @@ StreamProxy.registerProvider(rakutenRequest.SCHEME, resolveStream)
 
 def sessionstart(reason, session, **_kwargs):  # pylint: disable=unused-argument
     logger.info("+++ Version: %s starts...", VERSION)
-    Silent.init(session)
+    Silent.create().init(session)  # created here, not while the plugin is imported
 
 
 def Download_RakutenTV(session, **_kwargs):
